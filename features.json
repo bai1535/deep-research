@@ -491,6 +491,18 @@
         "command": "node scripts/verify-local-f34.mjs",
         "exit_code": 0
       }
+    },
+    {
+      "id": "F35",
+      "behavior": "MCTS-RAG 2.0 纯算法脚手架：新增 mcts_rag 包（A1-A6 动作空间、MCTSNode/UCT/backpropagate、候选答案分组投票）与单元测试",
+      "verification": "node scripts/verify-local-f35.mjs",
+      "state": "passing",
+      "active_at": "2026-09-03T03:00:00.000Z",
+      "evidence": {
+        "verified_at": "2026-09-03T03:00:00.000Z",
+        "command": "node scripts/verify-local-f35.mjs",
+        "exit_code": 0
+      }
     }
   ]
 }

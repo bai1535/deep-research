@@ -111,6 +111,9 @@
 - **Bing 解析优化**：`bing_search` 现在会先反转义 HTML 实体，再解码 `bing.com/ck`
   跳转链接为真实 URL；标题/摘要统一清理 HTML 标签与实体；解码失败时回退到
   `cite` 显示的可见域名，并补充单元测试。
+- **MCTS-RAG 2.0 纯算法脚手架（F35）**：新增 `deep_research/mcts_rag` 包，
+  定义 A1–A6 动作空间、MCTSNode/UCT/backpropagate、候选答案归一化分组投票；
+  当前为纯算法层，LLM/工具执行器在下一个里程碑接入。
 - 项目地图：`AGENTS.md` + 各模块 ARCHITECTURE/CONSTRAINTS + `Makefile`。
 
 ## 最新运行基线（run `20260824-034524`）
