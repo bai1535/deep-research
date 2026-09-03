@@ -1,0 +1,40 @@
+{
+  "feature_list": "features.json",
+  "progress": "PROGRESS.md",
+  "decisions": "DECISIONS.md",
+  "commands": {
+    "setup": "echo local-mirror-setup-ok",
+    "build": "echo local-mirror-build-ok",
+    "test": "node scripts/verify-local.mjs",
+    "start": "echo local-mirror-start-ok"
+  },
+  "exit_check": {
+    "debug_patterns": [
+      "console\\.log\\s*\\(",
+      "debugger\\s*;?",
+      "TODO",
+      "FIXME"
+    ],
+    "scan_extensions": [
+      ".py"
+    ],
+    "skip_dirs": [
+      ".git",
+      "node_modules",
+      "dist",
+      "build",
+      "coverage",
+      ".venv",
+      "venv",
+      "__pycache__",
+      ".next",
+      ".nuxt",
+      "runs",
+      "pgdata",
+      "logs",
+      "data",
+      ".superpowers",
+      ".pytest_cache"
+    ]
+  }
+}

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POP 06 — Deep Research 波普布局预览</title>
+<style>
+/* POP 06 仪表盘顶栏 — 彩虹条 */
+:root { --red:#ff5f4d; --yellow:#ffd93d; --cyan:#4ecdc4; --purple:#9b5de5; --ink:#111; --bg:#fafafa; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:"Arial Black", "Microsoft YaHei", sans-serif; background:var(--bg); color:var(--ink); min-height:100vh;
+  background-image:linear-gradient(90deg, rgba(255,95,77,.05) 0 20%, rgba(255,217,61,.05) 20% 40%, rgba(78,205,196,.05) 40% 60%, rgba(155,93,229,.05) 60% 80%, rgba(255,107,157,.05) 80% 100%); }
+.container { max-width:980px; margin:0 auto; padding:32px 20px; }
+.style-tag { position:fixed; top:14px; right:20px; font-size:.68rem; font-weight:900; color:var(--ink); background:var(--yellow);
+  border:3px solid var(--ink); padding:2px 8px; z-index:9; box-shadow:4px 4px 0 var(--ink); }
+header { text-align:center; padding:22px 0 18px; }
+header h1 { font-size:2.1rem; font-weight:900; background:linear-gradient(90deg, var(--red), var(--yellow), var(--cyan), var(--purple));
+  -webkit-background-clip:text; background-clip:text; color:transparent; }
+header p { margin-top:8px; font-size:.9rem; font-weight:700; }
+.dash-stats { display:grid; grid-template-columns:repeat(4,1fr); gap:12px; margin-bottom:20px; }
+.dash-stat { border:4px solid var(--ink); padding:16px; text-align:center; box-shadow:6px 6px 0 var(--ink); }
+.dash-stat .val { font-size:2rem; font-weight:900; }
+.dash-stat .lbl { font-size:.72rem; font-weight:800; opacity:.8; }
+.submit-box { background:var(--cyan); border:4px solid var(--ink); padding:18px; margin-bottom:18px; box-shadow:8px 8px 0 var(--ink); }
+.submit-box textarea { width:100%; background:#fff; border:3px solid var(--ink); padding:11px 14px; font-size:.95rem; resize:vertical; min-height:66px; font-family:inherit; color:var(--ink); }
+.submit-box button { margin-top:12px; background:var(--red); color:#fff; border:3px solid var(--ink); padding:10px 26px; font-size:1rem; font-weight:900; cursor:pointer; box-shadow:4px 4px 0 var(--ink); }
+.stream-panel { background:#fff; border:4px solid var(--ink); margin-bottom:20px; box-shadow:8px 8px 0 var(--ink); }
+.stream-head { display:flex; align-items:center; gap:8px; padding:11px 14px; font-weight:900; background:var(--purple); color:#fff; border-bottom:3px solid var(--ink); }
+.stream-phase { flex:1; text-align:right; font-size:.8rem; }
+.stream-body { padding:10px 14px 12px; font-family:Consolas, monospace; font-size:.75rem; line-height:1.85; font-weight:700; }
+.stream-line.strong { background:var(--yellow); display:inline-block; padding:1px 6px; }
+.stream-line.dim { opacity:.45; }
+.status-bar { display:flex; align-items:center; justify-content:space-between; margin-bottom:14px; }
+.status-bar h2 { font-size:1.15rem; font-weight:900; text-shadow:3px 3px 0 var(--cyan); }
+.auto-badge { font-size:.72rem; font-weight:800; display:flex; align-items:center; gap:5px; }
+.auto-badge .dot { width:8px; height:8px; border-radius:50%; background:var(--red); border:2px solid var(--ink); animation:pulse 1s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+.run-grid3 { display:grid; grid-template-columns:repeat(3,1fr); gap:14px; }
+.run-card { background:#fff; border:4px solid var(--ink); padding:15px 16px; box-shadow:6px 6px 0 var(--ink); display:flex; flex-direction:column; gap:9px; }
+.run-card:nth-child(1) { background:var(--red); color:#fff; }
+.run-card:nth-child(2) { background:var(--yellow); }
+.run-card:nth-child(3) { background:var(--purple); color:#fff; }
+.run-card .q { font-weight:900; }
+.run-card .meta { font-size:.76rem; font-weight:800; opacity:.8; display:flex; gap:10px; flex-wrap:wrap; }
+.badge { align-self:flex-start; display:inline-block; padding:2px 10px; font-size:.7rem; font-weight:900; background:#fff; border:2px solid var(--ink); }
+.badge-completed { color:#0a7d4c; } .badge-researching { color:#0b5fa5; } .badge-failed { color:var(--red); }
+@media (max-width:720px) { .run-grid3 { grid-template-columns:1fr; } .dash-stats { grid-template-columns:repeat(2,1fr); } }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="style-tag">POP 06 · 仪表盘</div>
+<header><h1>POP DASHBOARD</h1><p>研究控制台 — 统计一目了然</p></header>
+<div class="dash-stats">
+  <div class="dash-stat" style="background:var(--red);"><div class="val">18</div><div class="lbl">发现</div></div>
+  <div class="dash-stat" style="background:var(--yellow);"><div class="val">12</div><div class="lbl">验证</div></div>
+  <div class="dash-stat" style="background:var(--cyan);"><div class="val">82</div><div class="lbl">评分</div></div>
+  <div class="dash-stat" style="background:var(--purple); color:#fff;"><div class="val">✓</div><div class="lbl">已完成</div></div>
+</div>
+<div class="submit-box">
+  <textarea placeholder="输入你想研究的问题，例如：自建NAS的作用和价格..."></textarea>
+  <button>开始研究</button>
+</div>
+<div class="stream-panel">
+  <div class="stream-head"><span>📡 实时进度</span><span class="stream-phase">🔍 研究中</span></div>
+  <div class="stream-body">
+      <div class="stream-line strong">━━━ 🔍 研究中 ━━━</div>
+      <div class="stream-line">▶ 编排</div>
+      <div class="stream-line dim">📋 视角构成(技术类): 原理拆解·技术专家、部署配置·技术专家</div>
+      <div class="stream-line">🔎 研究员·原理拆解 → bing_search:「Qwen3.6-35B-A3B」</div>
+      <div class="stream-line">📄 研究员·原理拆解 ← bing_search:「1. Qwen3.6-35B-A3B URL: huggingface.co/...」</div>
+      <div class="stream-line">✔ 研究员·原理拆解 完成 — 4,500 tokens / $0.002</div>
+  </div>
+</div>
+<div class="status-bar"><h2>研究记录</h2><span class="auto-badge"><span class="dot"></span>自动刷新</span></div>
+<div class="run-grid3">
+    <div class="run-card">
+      <div class="top"><span class="q">Qwen3.6-35B-A3B 是什么，部署需要什么硬件？</span>
+        <span class="meta"><span>14:32</span><span>18 发现 · 82分</span><span class="badge badge-completed">已完成</span></span></div>
+    </div>
+    <div class="run-card">
+      <div class="top"><span class="q">自建 NAS 的成本与长期维护</span>
+        <span class="meta"><span>13:05</span><span>9 发现 · 3 验证</span><span class="badge badge-researching">搜索中</span></span></div>
+    </div>
+    <div class="run-card">
+      <div class="top"><span class="q">D2C 品牌出海值得做吗</span>
+        <span class="meta"><span>12:41</span><span>0 发现</span><span class="badge badge-failed">失败</span></span></div>
+    </div>
+</div>
+</div>
+</body>
+</html>

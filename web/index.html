@@ -1,0 +1,631 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deep Research</title>
+<style>
+  :root {
+    /* Cyber-showcase (Pop-Art shelf) palette */
+    --bg: #12122b; --card: rgba(18,18,43,.92); --border: #3a3a8e;
+    --pink: #ff2d78; --cyan: #00e5ff; --yellow: #ffe14d; --purple: #9b5de5;
+    --green: #39ffa0; --red: #ff4b4b; --text: #f0f0ff; --dim: #8a8ad0;
+    /* Legacy aliases — inline styles in JS still reference these */
+    --accent: var(--cyan);
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body {
+    font-family: "Arial Black", -apple-system, "Segoe UI", "Microsoft YaHei", sans-serif;
+    background: var(--bg); color: var(--text); min-height:100vh;
+    background-image:
+      linear-gradient(rgba(0,229,255,.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,255,.045) 1px, transparent 1px);
+    background-size: 32px 32px;
+  }
+  body::before { content:''; position:fixed; inset:0; pointer-events:none; z-index:0;
+    background: radial-gradient(700px 460px at 75% 15%, rgba(255,45,120,.09), transparent 60%),
+                radial-gradient(600px 420px at 12% 85%, rgba(0,229,255,.07), transparent 60%); }
+  .container { max-width: 980px; margin: 0 auto; padding: 30px 20px; position:relative; z-index:1; }
+
+  header { text-align:center; padding: 30px 0 22px; }
+  header h1 {
+    font-size: 2.1rem; font-weight: 900; letter-spacing: 2px;
+    color: var(--cyan); text-shadow: 0 0 16px rgba(0,229,255,.55), 4px 4px 0 var(--pink);
+  }
+  header p { color: var(--dim); margin-top: 8px; font-size: .9rem; font-weight: 700; }
+
+  .submit-box { background: var(--card); border: 4px solid var(--pink); padding: 18px;
+    margin-bottom: 20px; box-shadow: 8px 8px 0 var(--cyan); }
+  .submit-box textarea { width:100%; background: #0a0a20; border: 3px solid var(--border);
+    padding: 12px 15px; font-size: .98rem; resize: vertical; min-height: 74px;
+    font-family: inherit; color: var(--text); }
+  .submit-box textarea::placeholder { color: rgba(138,138,208,.55); }
+  .submit-box textarea:focus { outline:none; border-color: var(--cyan); box-shadow: 0 0 14px rgba(0,229,255,.18); }
+  .submit-box button { margin-top: 12px; background: var(--yellow); color: #14142e; border: 3px solid #000;
+    padding: 11px 30px; font-size: 1.05rem; font-weight: 900; cursor: pointer; box-shadow: 4px 4px 0 var(--pink); }
+  .submit-box button:hover { transform: translate(2px,2px); box-shadow: 2px 2px 0 var(--pink); }
+  .submit-box button:disabled { opacity:.5; cursor: not-allowed; transform:none; }
+
+  .stream-panel { background: var(--card); border: 4px solid var(--purple); margin-bottom: 22px;
+    box-shadow: 8px 8px 0 var(--cyan); }
+  .stream-head { display:flex; align-items:center; gap:10px; padding: 12px 16px; font-weight: 900;
+    color: var(--cyan); border-bottom: 3px solid var(--border); }
+  .stream-head::before { content:""; width: 8px; height: 8px; background: var(--pink); animation: pulse 1.4s infinite; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.2} }
+  .stream-phase { flex:1; text-align:right; font-size:.82rem; color: var(--pink); }
+  .stream-toggle { color: var(--dim); }
+  .stream-body { padding: 11px 16px 14px; font-family: Consolas, monospace; font-size: .76rem;
+    line-height: 1.9; color: #c9c9f0; max-height: 320px; overflow-y: auto; }
+  .stream-body::-webkit-scrollbar { width: 8px; }
+  .stream-body::-webkit-scrollbar-thumb { background: var(--purple); border-radius: 4px; }
+  .stream-body::-webkit-scrollbar-track { background: transparent; }
+  .stream-line { color: #c9c9f0; }
+  .stream-line.strong { color: var(--yellow); font-weight: 700; }
+  .stream-line.dim { color: rgba(138,138,208,.5); }
+
+  .showcase { margin-bottom: 22px; }
+  .hero-card { background: var(--card); border: 4px solid var(--cyan); padding: 26px;
+    box-shadow: 10px 10px 0 var(--pink); position: relative; min-height: 220px; }
+  .hero-tag { position:absolute; top:-15px; left:22px; background: var(--cyan); color: #14142e;
+    font-weight: 900; font-size:.78rem; padding: 3px 14px; border: 3px solid #000;
+    box-shadow: 3px 3px 0 var(--pink); }
+  .hero-card .q { font-size: 1.55rem; font-weight: 900; color: var(--cyan);
+    text-shadow: 0 0 12px rgba(0,229,255,.4); margin: 8px 0 10px; line-height: 1.35; }
+  .hero-card .meta { font-size: .84rem; font-weight: 800; color: var(--dim); margin-bottom: 12px; }
+  .hero-card .badge { font-size: .78rem; }
+  .hero-card .detail { margin-top: 14px; border-top: 3px dashed var(--border); padding-top: 14px; }
+  .hero-card .report { font-size: .93rem; line-height: 1.8; color: #d9d9ff; }
+  .hero-card .report h1,.hero-card .report h2,.hero-card .report h3,.hero-card .report h4 { margin: 14px 0 8px; }
+  .hero-card .report h1 { font-size:1.25rem; color: var(--yellow); }
+  .hero-card .report h2 { font-size:1.1rem; color: var(--yellow); }
+  .hero-card .report h3 { font-size:1rem; color: var(--cyan); }
+  .hero-card .report h4 { font-size:.95rem; color: var(--green); }
+  .hero-card .report a { color: var(--cyan); font-weight: 900; }
+  .hero-card .report blockquote { border-left: 4px solid var(--pink); margin: 8px 0; padding: 4px 14px; color: var(--dim); }
+  .hero-card .report code { background: #0a0a20; border: 1px solid var(--border); padding: 1px 6px; color: var(--yellow); font-size: .85em; font-family: Consolas, monospace; }
+  .hero-card .report pre { background: #0a0a20; border: 1px solid var(--border); padding: 12px; overflow-x:auto; font-family: Consolas, monospace; }
+  .hero-card .report table { border-collapse:collapse; width:100%; margin:8px 0; font-size:.85rem; }
+  .hero-card .report th,.hero-card .report td { border:1px solid var(--border); padding:6px 10px; text-align:left; }
+  .hero-card .report th { background:rgba(0,229,255,.08); }
+
+  .claim-evidence { margin-top: 18px; border-top: 3px dashed var(--border); padding-top: 14px; }
+  .claim-evidence h3 { color: var(--cyan); margin-bottom: 10px; font-size: 1rem; }
+  .claim-card {
+    background: rgba(10,10,32,.65); border: 2px solid var(--border); border-left: 5px solid var(--cyan);
+    padding: 10px 12px; margin-bottom: 10px; font-size: .86rem; line-height: 1.6;
+  }
+  .claim-card .cc-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+  .claim-card .cc-text { color: #d9d9ff; font-weight: 700; }
+  .claim-card .cc-links { margin-top: 4px; }
+  .claim-card .cc-links a { display: inline-block; margin-right: 8px; font-size: .78rem; word-break: break-all; }
+  .claim-card .cc-meta { color: var(--dim); font-size: .76rem; }
+  .claim-badge { display:inline-block; padding: 1px 8px; font-size:.68rem; font-weight:900; border:2px solid; border-radius: 999px; }
+  .claim-badge.verified { color: var(--green); border-color: var(--green); }
+  .claim-badge.suspect { color: var(--yellow); border-color: var(--yellow); }
+  .claim-badge.disputed { color: var(--red); border-color: var(--red); }
+  .claim-badge.false { color: var(--red); border-color: var(--red); }
+  .claim-badge.unverifiable { color: var(--dim); border-color: var(--dim); }
+  .claim-evidence-btn {
+    display:inline-block; margin-top: 8px; background: var(--cyan); color:#14142e; border:2px solid #000;
+    padding: 5px 14px; font-weight:900; font-size:.78rem; text-decoration:none;
+  }
+  .claim-evidence-btn:hover { background: var(--yellow); }
+
+  .claim-sup {
+    display: inline-block; min-width: 16px; height: 16px; line-height: 16px;
+    text-align: center; border-radius: 999px; font-size: 11px; font-weight: 900;
+    cursor: pointer; margin-left: 2px; vertical-align: super; font-style: normal;
+    border: 2px solid; padding: 0 3px; user-select: none;
+  }
+  .claim-sup.status-verified { color: #07130c; background: var(--green); border-color: var(--green); }
+  .claim-sup.status-suspect { color: #2b1200; background: var(--yellow); border-color: var(--yellow); }
+  .claim-sup.status-disputed { color: #fff; background: var(--red); border-color: var(--red); }
+  .claim-sup.status-false { color: #fff; background: var(--red); border-color: var(--red); }
+  .claim-sup.status-unverifiable { color: var(--dim); background: #1a1a3a; border-color: var(--dim); }
+
+  .evidence-footnotes { margin-top: 20px; border-top: 3px dashed var(--border); padding-top: 12px; }
+  .evidence-footnotes h3 { color: var(--cyan); margin-bottom: 10px; font-size: 1rem; }
+  .footnote {
+    background: rgba(10,10,32,.7); border: 2px solid var(--border); border-left: 5px solid var(--cyan);
+    padding: 8px 12px; margin-bottom: 10px; font-size: .84rem; line-height: 1.6;
+    scroll-margin-top: 20px;
+  }
+  .footnote.flash { border-color: var(--yellow); box-shadow: 0 0 18px rgba(255,225,77,.25); }
+  .footnote .fn-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; margin-bottom: 4px; }
+  .footnote .fn-num { color: var(--cyan); font-weight: 900; }
+  .footnote .fn-text { color: #d9d9ff; font-weight: 700; }
+  .footnote .fn-links a { display: inline-block; margin-right: 8px; font-size: .78rem; word-break: break-all; }
+  .footnote .fn-meta { color: var(--dim); font-size: .76rem; }
+
+  .thumbnav { display: grid; grid-template-columns: repeat(auto-fill, minmax(190px, 1fr)); gap: 12px; margin-top: 16px; }
+  .thumb { background: var(--card); border: 3px solid var(--border); padding: 13px 15px;
+    cursor: pointer; display: flex; flex-direction: column; gap: 7px; transition: border-color .15s, box-shadow .15s; }
+  .thumb:hover { border-color: var(--cyan); box-shadow: 0 0 14px rgba(0,229,255,.2); }
+  .thumb.active { border-color: var(--pink); box-shadow: 0 0 16px rgba(255,45,120,.3); }
+  .thumb .t-q { font-weight: 900; font-size: .84rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .thumb .t-meta { font-size: .72rem; font-weight: 800; color: var(--dim); display:flex; align-items:center; gap:8px; }
+  .thumb .t-meta .badge { margin-left:auto; }
+  .thumb-resume { margin-left:auto; background:transparent; border:2px solid var(--cyan); color:var(--cyan);
+    font-size:.66rem; font-weight:900; padding:1px 7px; cursor:pointer; }
+  .thumb-resume:hover { background:var(--cyan); color:#14142e; }
+
+  .badge { display: inline-block; padding: 3px 11px; font-size: .72rem; font-weight: 900; border: 2px solid; white-space: nowrap; }
+  .badge-completed { color: var(--yellow); border-color: var(--yellow); }
+  .badge-researching { color: var(--cyan); border-color: var(--cyan); }
+  .badge-verifying { color: var(--green); border-color: var(--green); }
+  .badge-synthesizing { color: var(--purple); border-color: var(--purple); }
+  .badge-failed { color: var(--red); border-color: var(--red); }
+  .badge-pending { color: var(--dim); border-color: var(--dim); }
+
+  .empty { text-align:center; padding: 44px 0; color: var(--dim); font-weight: 700; }
+  .empty .icon { font-size: 2.6rem; margin-bottom: 10px; filter: drop-shadow(0 0 12px rgba(255,45,120,.5)); }
+  .spinner { display:inline-block; width: 16px; height: 16px; border: 3px solid rgba(0,229,255,.2);
+    border-top-color: var(--cyan); border-radius: 50%; animation: spin .6s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-track { background: #0a0a20; }
+  ::-webkit-scrollbar-thumb { background: var(--border); border: 2px solid #0a0a20; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--cyan); }
+  ::selection { background: rgba(255,45,120,.3); }
+
+  @media (max-width: 640px) {
+    header h1 { font-size: 1.6rem; }
+    .hero-card .q { font-size: 1.2rem; }
+    .thumbnav { grid-template-columns: 1fr 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>&#128269; Deep Research</h1>
+    <p>多智能体深度研究 — 输入问题，获得一份有来源引用的综合报告</p>
+  </header>
+
+  <div class="submit-box">
+    <textarea id="question" placeholder="输入你想研究的问题，例如：自建NAS的作用和价格、时序大模型哪个好..."></textarea>
+    <button id="submitBtn" onclick="submitResearch()">开始研究</button>
+    <span id="submitMsg" style="margin-left:12px;font-size:0.85rem;color:var(--accent);"></span>
+  </div>
+
+  <!-- Live progress stream -->
+  <div class="stream-panel" id="streamPanel" style="display:none;">
+    <div class="stream-head" onclick="toggleStream()">
+      <span>📡 实时进度</span>
+      <span id="streamPhase" class="stream-phase">等待开始...</span>
+      <span class="stream-toggle">▾</span>
+    </div>
+    <div class="stream-body" id="streamBody"></div>
+  </div>
+
+  <div class="status-bar">
+    <h2>研究橱窗</h2>
+    <span class="auto-badge"><span class="dot" id="liveDot"></span>自动刷新中</span>
+  </div>
+
+  <div class="showcase">
+    <div class="hero-card" id="heroCard">
+      <div class="hero-tag">当前展出</div>
+      <div class="empty"><div class="icon">&#128451;</div>还没有研究记录，提交一个问题开始吧</div>
+    </div>
+    <div class="thumbnav" id="thumbnav"></div>
+  </div>
+</div>
+
+<script>
+const API = '';
+
+function $(id) { return document.getElementById(id); }
+
+// ── Submit ──────────────────────────────────────────────────────────
+async function submitResearch() {
+  const q = $('question').value.trim();
+  if (!q) return;
+  const btn = $('submitBtn'), msg = $('submitMsg');
+  btn.disabled = true; msg.textContent = '提交中...';
+  try {
+    const r = await fetch(API + '/research', { method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify({question:q}) });
+    if (r.ok) { $('question').value = ''; msg.textContent = '✅ 已提交，正在研究...'; }
+    else { const e = await r.json(); msg.textContent = '❌ ' + (e.detail || '提交失败'); }
+    loadRuns();
+    if (r.ok) { const d = await r.json(); openStream(d.run_id); }
+  } catch(e) { msg.textContent = '❌ 网络错误'; }
+  btn.disabled = false;
+  setTimeout(() => msg.textContent = '', 4000);
+}
+
+// ── Live progress stream (SSE) ─────────────────────────────────────
+let streamSource = null;
+let streamRunning = false;
+let streamRunId = null;
+
+function openStream(runId) {
+  // Close any existing stream
+  if (streamSource) { streamSource.close(); streamSource = null; }
+
+  const panel = $('streamPanel');
+  const body = $('streamBody');
+  panel.style.display = 'block';
+  body.innerHTML = '<div class="stream-line dim">连接实时进度...</div>';
+  streamRunning = true;
+  streamRunId = runId;
+
+  streamSource = new EventSource(API + '/research/' + runId + '/stream');
+  streamSource.onmessage = (e) => {
+    try { const ev = JSON.parse(e.data); handleStreamEvent(ev); }
+    catch(err) { /* ignore malformed */ }
+  };
+  streamSource.onerror = () => {
+    // EventSource auto-reconnects; stop if the run actually finished
+    // (its event bus is released after the TTL, so reconnecting is futile)
+    $('streamPhase').textContent = '连接中断，重连中...';
+    if (streamRunId) {
+      fetch(API + '/research/' + streamRunId)
+        .then(r => r.json())
+        .then(s => {
+          if (s && ['completed','failed'].includes(s.status)) {
+            streamRunning = false;
+            if (streamSource) { streamSource.close(); streamSource = null; }
+            $('streamPhase').textContent = '流已结束';
+          }
+        })
+        .catch(() => {});
+    }
+  };
+}
+
+function handleStreamEvent(ev) {
+  const body = $('streamBody');
+  const phaseEl = $('streamPhase');
+  let line = '';
+
+  switch (ev.type) {
+    case 'phase_start':
+      phaseEl.textContent = { research:'🔍 研究中', augment:'🔄 补充搜索', reflection:'🔬 质量评审', verification:'✅ 验证中', synthesis:'📝 合成报告' }[ev.phase] || ev.phase;
+      line = '━━━ ' + phaseEl.textContent + ' ━━━';
+      break;
+    case 'phase_done':
+      if (ev.phase === 'reflection') return;  // verdict comes via 'reflection' event
+      if (ev.phase === 'research') phaseEl.textContent = '🔍 研究完成（' + ev.findings + ' 条发现）';
+      else if (ev.phase === 'verification') phaseEl.textContent = '✅ 验证完成（' + ev.verified + ' 条）';
+      else if (ev.phase === 'synthesis') phaseEl.textContent = '📝 报告完成（' + ev.score + ' 分）';
+      line = '━━━ ' + phaseEl.textContent + ' ━━━';
+      break;
+    case 'perspectives': {
+      const typeMap = { technical:'技术类', business:'商业类', academic:'学术类', policy:'政策类', comparative:'对比类', general:'综合' };
+      const parts = ev.names.map((n, i) => n + (ev.roles && ev.roles[i] ? '·' + ev.roles[i] : ''));
+      line = '📋 视角构成(' + (typeMap[ev.question_type] || ev.question_type) + '): ' + parts.join('、');
+      break;
+    }
+    case 'reflection':
+      if (ev.acceptable) {
+        phaseEl.textContent = '🔬 质量评审通过（' + ev.score + ' 分）';
+        line = '━━━ ✅ 质量评审通过：' + ev.score + ' 分 ━━━';
+      } else {
+        phaseEl.textContent = '🔬 评审不达标（' + ev.score + ' 分），补充搜索...';
+        line = '━━━ ⚠️ 质量评审不达标：' + ev.score + ' 分，带反馈补搜 ━━━';
+      }
+      break;
+    case 'agent_start':
+      line = '▶ ' + shortAgent(ev.agent);
+      break;
+    case 'tool_call':
+      line = '   🔎 ' + shortAgent(ev.agent) + ' → ' + ev.tool + (ev.query ? '：「' + ev.query + '」' : '');
+      break;
+    case 'tool_done': {
+      // show what the tool actually returned (search results, fetch bodies)
+      const pv = ev.preview ? ev.preview.replace(/\s+/g, ' ').slice(0, 110) : '';
+      line = '   📄 ' + shortAgent(ev.agent) + ' ← ' + ev.tool + (pv ? '：「' + pv + '」' : ' (' + ev.chars + ' 字符)');
+      break;
+    }
+    case 'agent_done': {
+      const TERM = { 'stalled':'重复调用提前终止', 'tools-failed':'工具连续失败提前终止', 'max-rounds':'轮数上限', 'llm-error':'LLM 异常' };
+      let note = '';
+      if (ev.termination) {
+        const key = Object.keys(TERM).find(k => ev.termination.startsWith(k));
+        note = ' — ⏹ ' + (TERM[key] || ev.termination);
+      }
+      line = '   ✔ ' + shortAgent(ev.agent) + ' 完成' + note + ' — ' + ev.tokens + ' tokens / $' + ev.cost;
+      break;
+    }
+    case 'run_done':
+      phaseEl.textContent = '🎉 完成 — ' + ev.findings + ' 条发现 / ' + ev.score + ' 分';
+      line = '━━━ 🎉 研究完成 ━━━';
+      streamRunning = false;
+      if (streamSource) { streamSource.close(); streamSource = null; }
+      break;
+    case 'stream_end':
+      streamRunning = false;
+      if (streamSource) { streamSource.close(); streamSource = null; }
+      return;
+    default:
+      return;
+  }
+
+  const div = document.createElement('div');
+  div.className = 'stream-line' + (ev.type === 'agent_start' || ev.type === 'phase_start' ? ' strong' : '');
+  div.textContent = '[' + (ev.ts || '') + '] ' + line;
+  body.appendChild(div);
+  // Auto-scroll to bottom
+  body.scrollTop = body.scrollHeight;
+}
+
+function shortAgent(name) {
+  // "researcher-technical" → "研究员·技术"; "verifier-industry" → "核查·行业"
+  const map = { researcher:'研究员', verifier:'核查', refuter:'反驳', orchestrator:'编排', scorer:'评分', extractor:'洞察', editor:'主编', 'cross-checker':'交叉验证' };
+  const parts = name.split('-');
+  const role = map[parts[0]] || parts[0];
+  return role + (parts[1] ? '·' + parts[1] : '');
+}
+
+function toggleStream() {
+  const body = $('streamBody');
+  body.style.display = body.style.display === 'none' ? 'block' : 'none';
+}
+
+// ── Load runs ───────────────────────────────────────────────────────
+async function loadRuns() {
+  try {
+    const r = await fetch(API + '/research?limit=30');
+    const runs = await r.json();
+    renderRuns(runs);
+    // Auto-refresh if any run is in progress
+    const hasRunning = runs.some(r => !['completed','failed'].includes(r.status));
+    $('liveDot').style.display = hasRunning ? '' : 'none';
+    // Page refresh: re-attach the stream to the most recent running run
+    // (openStream is otherwise only called on submit)
+    const running = runs.find(r => !['completed','failed'].includes(r.status));
+    if (running && !streamRunning) openStream(running.run_id);
+  } catch(e) { console.error(e); }
+}
+
+const STATUS_LABELS = { pending:'等待中', researching:'搜索中', verifying:'验证中', synthesizing:'合成中', completed:'已完成', failed:'失败' };
+const BADGE_CLASS = { completed:'badge-completed', failed:'badge-failed', researching:'badge-researching', verifying:'badge-verifying', synthesizing:'badge-synthesizing', pending:'badge-pending' };
+
+function renderRuns(runs) {
+  const nav = $('thumbnav');
+  nav.innerHTML = '';
+
+  if (!runs.length) {
+    $('heroCard').innerHTML =
+      '<div class="hero-tag">当前展出</div>' +
+      '<div class="empty"><div class="icon">&#128451;</div>还没有研究记录，提交一个问题开始吧</div>';
+    selectedRunId = null;
+    return;
+  }
+
+  // Rebuild thumbnail nav (thumbs are small; rebuilding is cheap and
+  // the hero card is preserved separately).
+  runs.forEach(r => {
+    const th = document.createElement('div');
+    th.className = 'thumb' + (r.run_id === selectedRunId ? ' active' : '');
+    th.dataset.runId = r.run_id;
+    th.innerHTML =
+      '<span class="t-q">' + esc(r.question || '(无标题)') + '</span>' +
+      '<span class="t-meta">' +
+        (STATUS_LABELS[r.status] || r.status) + ' · ' + r.findings + ' 发现' +
+        '<span class="badge ' + (BADGE_CLASS[r.status] || 'badge-pending') + '">' + (STATUS_LABELS[r.status] || r.status) + '</span>' +
+        resumeButtonHtml(r.run_id, r.status) +
+      '</span>';
+    th.onclick = function(e) { if (e.target.closest('.thumb-resume')) return; toggleDetail(r.run_id); };
+    nav.appendChild(th);
+  });
+
+  // Auto-select: keep the current selection if it still exists, else
+  // prefer a completed run, else the first.
+  if (!selectedRunId || !runs.some(r => r.run_id === selectedRunId)) {
+    const pick = runs.find(r => r.status === 'completed') || runs[0];
+    toggleDetail(pick.run_id);
+  }
+}
+
+// ── Showcase select: one run displayed in the hero card ───────────
+let selectedRunId = null;
+
+async function toggleDetail(runId) {
+  selectedRunId = runId;
+  document.querySelectorAll('.thumb').forEach(t => t.classList.toggle('active', t.dataset.runId === runId));
+  await loadHero(runId);
+}
+
+function claimBadgeClass(status) {
+  const s = String(status || 'unverifiable').toLowerCase();
+  return ['verified', 'suspect', 'disputed', 'false', 'unverifiable'].includes(s) ? s : 'unverifiable';
+}
+
+// Color is driven by credibility/confidence first; status only overrides
+// for clearly contradicted/refuted claims.
+function claimColorClass(c) {
+  const status = String(c.status || '').toLowerCase();
+  if (status === 'disputed' || status === 'false') return 'disputed';
+  const conf = Number(c.confidence ?? 0);
+  if (conf >= 70) return 'verified';
+  if (conf >= 40) return 'suspect';
+  if (conf > 0) return 'disputed';
+  return 'unverifiable';
+}
+
+function validClaims(claimsData) {
+  if (!claimsData || !Array.isArray(claimsData.claims)) return [];
+  return claimsData.claims.filter(c =>
+    c && c.span && typeof c.span.start === 'number' && typeof c.span.end === 'number' &&
+    c.span.start >= 0 && c.span.end > c.span.start
+  );
+}
+
+function renderEvidenceFootnotes(claimsData) {
+  const claims = validClaims(claimsData);
+  if (!claims.length) return '';
+  const items = claims.map((c, i) => {
+    const status = String(c.status || 'unverifiable');
+    const cls = claimColorClass(c);
+    const conf = Number(c.confidence ?? 0);
+    const links = (c.evidence_links || []).map(e =>
+      '<a href="' + esc(e.url) + '" target="_blank" rel="noopener">' + esc(e.url) + '</a>'
+    ).join('');
+    return '<div class="footnote" id="evidence-' + esc(c.claim_id) + '">' +
+      '<div class="fn-head"><span class="fn-num">[' + (i + 1) + ']</span>' +
+      '<span class="claim-badge ' + cls + '">' + esc(status) + '</span>' +
+      '<span class="fn-meta">' + esc(c.claim_id || '') + ' · 置信度 ' + conf + '</span></div>' +
+      '<div class="fn-text">' + esc(c.text) + '</div>' +
+      (c.reasoning ? '<div class="fn-meta">' + esc(c.reasoning) + '</div>' : '') +
+      (links ? '<div class="fn-links">' + links + '</div>' : '') +
+      '</div>';
+  }).join('');
+  return '<div class="evidence-footnotes"><h3>📎 证据注释</h3>' + items +
+    '<a class="claim-evidence-btn" href="/report/' + encodeURIComponent((claimsData.run_id || '')) + '" target="_blank">打开证据版 →</a></div>';
+}
+
+function renderMarkdownWithClaims(md, claimsData) {
+  const claims = validClaims(claimsData);
+  if (!md || !claims.length) return renderMarkdown(md || '');
+
+  // Insert unique placeholder tokens at claim end positions (right-to-left so
+  // earlier offsets remain valid).
+  const sorted = claims.slice().sort((a, b) => b.span.end - a.span.end);
+  const tokens = [];
+  let text = md;
+  for (let i = 0; i < sorted.length; i++) {
+    const c = sorted[i];
+    const token = '\u0001C' + i + '\u0002';
+    tokens.push({ token, claim: c, index: claims.indexOf(c) + 1 });
+    const end = Math.min(c.span.end, text.length);
+    text = text.slice(0, end) + token + text.slice(end);
+  }
+  let html = renderMarkdown(text);
+  for (const t of tokens) {
+    const status = claimColorClass(t.claim);
+    html = html.split(t.token).join(
+      '<sup class="claim-sup status-' + status + '" data-claim="' + esc(t.claim.claim_id) +
+      '" title="' + esc(t.claim.text) + '">' + t.index + '</sup>'
+    );
+  }
+  return html;
+}
+
+async function loadHero(runId) {
+  const hero = $('heroCard');
+  hero.innerHTML =
+    '<div class="hero-tag">当前展出</div>' +
+    '<div style="padding:24px;text-align:center;"><span class="spinner"></span> 加载中...</div>';
+  try {
+    const [statusR, reportR, claimsR] = await Promise.all([
+      fetch(API + '/research/' + runId),
+      fetch(API + '/research/' + runId + '/report'),
+      fetch(API + '/research/' + runId + '/claims')
+    ]);
+    const st = await statusR.json();
+    const reportText = reportR.ok ? await reportR.text() : '';
+    let reportHtml = '';
+    if (reportR.ok) {
+      reportHtml = renderMarkdown(reportText);
+    } else {
+      reportHtml = '<p style="color:var(--dim)">报告尚未生成 — 当前状态：' + (STATUS_LABELS[st.status] || st.status) + '</p>';
+    }
+    let claimsData = null;
+    let footnotesHtml = '';
+    if (claimsR.ok) {
+      try {
+        claimsData = await claimsR.json();
+        reportHtml = renderMarkdownWithClaims(reportText, claimsData);
+        footnotesHtml = renderEvidenceFootnotes(claimsData);
+      } catch (e) { console.error('claims render error', e); }
+    }
+    hero.innerHTML =
+      '<div class="hero-tag">当前展出</div>' +
+      '<div class="q">' + esc(st.question || '(无标题)') + '</div>' +
+      '<div class="meta">' + st.findings + ' 发现 · ' + st.verified + ' 验证 · ' +
+        (st.score ?? '-') + ' 分' + (st.created_at ? ' · ' + st.created_at.slice(0, 16) : '') + '</div>' +
+      '<div class="badge ' + (BADGE_CLASS[st.status] || 'badge-pending') + '">' + (STATUS_LABELS[st.status] || st.status) + '</div>' +
+      '<div class="detail"><div class="report">' + reportHtml + '</div>' + footnotesHtml + '</div>';
+  } catch(e) {
+    hero.innerHTML =
+      '<div class="hero-tag">当前展出</div>' +
+      '<p style="color:var(--red);padding:12px;">加载失败：' + e.message + '</p>';
+  }
+}
+
+// ── Simple markdown renderer ────────────────────────────────────────
+function renderMarkdown(md) {
+  let html = md
+    .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')
+    // Headers
+    .replace(/^#### (.+)$/gm,'<h4>$1</h4>')
+    .replace(/^### (.+)$/gm,'<h3>$1</h3>')
+    .replace(/^## (.+)$/gm,'<h2>$1</h2>')
+    .replace(/^# (.+)$/gm,'<h1>$1</h1>')
+    // Bold / italic
+    .replace(/\*\*(.+?)\*\*/g,'<strong>$1</strong>')
+    .replace(/\*(.+?)\*/g,'<em>$1</em>')
+    // Inline code
+    .replace(/`([^`]+)`/g,'<code>$1</code>')
+    // Horizontal rule
+    .replace(/^---$/gm,'<hr>')
+    // Blockquote
+    .replace(/^&gt; (.+)$/gm,'<blockquote>$1</blockquote>')
+    // Links
+    .replace(/\[([^\]]+)\]\(([^)]+)\)/g,'<a href="$2" target="_blank">$1</a>')
+    // Bare URLs (avoid re-wrapping URLs already inside href="...")
+    .replace(/(^|[\s(])(https?:\/\/[^\s)<]+)/g,'$1<a href="$2" target="_blank" rel="noopener">$2</a>')
+    // Tables (simple: pipe-delimited rows)
+    .replace(/^\|(.+)\|$/gm, (line) => {
+      const cells = line.split('|').filter(c => c.trim()).map(c => /^[-: ]+$/.test(c.trim()) ? '<th></th>' : '<td>'+c.trim()+'</td>').join('');
+      return line.includes('---') ? '' : '<tr>'+cells+'</tr>';
+    })
+    // Line breaks
+    .replace(/\n\n/g,'</p><p>')
+    .replace(/\n/g,'<br>');
+  return '<p>' + html + '</p>';
+}
+
+function esc(s) { const d = document.createElement('div'); d.textContent = s; return d.innerHTML; }
+
+// ── Resume ──────────────────────────────────────────────────────────
+const RESUMABLE_STATUSES = ['researching', 'verifying', 'synthesizing', 'pending'];
+
+function resumeButtonHtml(runId, status) {
+  if (!RESUMABLE_STATUSES.includes(status)) return '';
+  return '<button class="thumb-resume" onclick="event.stopPropagation();resumeRun(\'' + runId + '\', this)">♻️ 恢复</button>';
+}
+
+async function resumeRun(runId, btn) {
+  if (btn) { btn.disabled = true; btn.textContent = '恢复中...'; }
+  try {
+    const r = await fetch(API + '/research/' + runId + '/resume', { method: 'POST' });
+    const data = await r.json();
+    if (r.ok) {
+      if (btn) btn.textContent = '已恢复';
+      loadRuns();
+    } else {
+      if (btn) { btn.disabled = false; btn.textContent = '♻️ 恢复'; }
+      alert(data.message || '恢复失败');
+    }
+  } catch(e) {
+    if (btn) { btn.disabled = false; btn.textContent = '♻️ 恢复'; }
+    alert('网络错误：' + e.message);
+  }
+}
+
+// ── Superscript → evidence footnote navigation ─────────────────────
+document.addEventListener('click', function(e) {
+  const sup = e.target.closest('.claim-sup');
+  if (!sup) return;
+  const claimId = sup.getAttribute('data-claim');
+  const fn = document.getElementById('evidence-' + claimId);
+  if (fn) {
+    fn.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    fn.classList.add('flash');
+    setTimeout(function() { fn.classList.remove('flash'); }, 2000);
+  }
+});
+
+// ── Init ────────────────────────────────────────────────────────────
+loadRuns();
+setInterval(loadRuns, 5000);
+
+// Submit on Ctrl+Enter
+$('question').addEventListener('keydown', e => { if (e.ctrlKey && e.key === 'Enter') submitResearch(); });
+</script>
+</body>
+</html>

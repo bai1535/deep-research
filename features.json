@@ -1,0 +1,496 @@
+{
+  "features": [
+    {
+      "id": "F01",
+      "behavior": "修复测试体系：将 tests/test_db.py 改为 asyncpg/PostgreSQL 测试，修正 tests/test_config.py 的过时断言，并让 make test 全绿",
+      "verification": "node scripts/verify-local.mjs",
+      "state": "passing",
+      "evidence": {
+        "verified_at": "2026-08-25T02:33:48.979Z",
+        "command": "node scripts/verify-local.mjs",
+        "exit_code": 0
+      },
+      "active_at": "2026-08-25T02:33:38.569Z"
+    },
+    {
+      "id": "F02",
+      "behavior": "建立效果评估体系：新增 scripts/search_eval.py，支持 Hit@5 / nDCG@5 / 延迟 / 可用率，并让搜索调用日志记录返回 URL",
+      "verification": "node scripts/verify-local-f02.mjs",
+      "state": "passing",
+      "evidence": {
+        "verified_at": "2026-08-25T03:01:11.803Z",
+        "command": "node scripts/verify-local-f02.mjs",
+        "exit_code": 0
+      },
+      "active_at": "2026-08-25T02:59:50.014Z"
+    },
+    {
+      "id": "F03",
+      "behavior": "修复 response_parser：归一化全角/智能双引号，避免 verifier 等 JSON 解析全部失败，并补充解析器测试",
+      "verification": "node scripts/verify-local-f03.mjs",
+      "state": "passing",
+      "evidence": {
+        "verified_at": "2026-08-25T03:14:11.803Z",
+        "command": "node scripts/verify-local-f03.mjs",
+        "exit_code": 0
+      },
+      "active_at": "2026-08-25T03:10:50.014Z"
+    },
+    {
+      "id": "F04",
+      "behavior": "接入公开基准评测：DeepResearch Bench + BrowseComp-Plus，新增 scripts/eval_benchmarks.py 和 make eval-bench",
+      "verification": "node scripts/verify-local-f04.mjs",
+      "state": "passing",
+      "evidence": {
+        "verified_at": "2026-08-25T03:30:11.803Z",
+        "command": "node scripts/verify-local-f04.mjs",
+        "exit_code": 0
+      },
+      "active_at": "2026-08-25T03:25:50.014Z"
+    },
+    {
+      "id": "F05",
+      "behavior": "优化搜索策略：Bing 英文市场检索 + 研究员搜索策略提示（拆解锚点、精确短语、site:、避免重复）",
+      "verification": "node scripts/verify-local-f05.mjs",
+      "state": "passing",
+      "evidence": {
+        "verified_at": "2026-08-25T03:45:11.803Z",
+        "command": "node scripts/verify-local-f05.mjs",
+        "exit_code": 0
+      },
+      "active_at": "2026-08-25T03:40:50.014Z"
+    },
+    {
+      "id": "F06",
+      "behavior": "修复日志查看器 ERROR 过滤和 Scorer 缺 overall_score 导致的 Total failure",
+      "verification": "node scripts/verify-local-f06.mjs",
+      "state": "passing",
+      "evidence": {
+        "verified_at": "2026-08-27T07:27:01.611Z",
+        "command": "node scripts/verify-local-f06.mjs",
+        "exit_code": 0
+      },
+      "active_at": "2026-08-27T07:27:01.300Z"
+    },
+    {
+      "id": "F07",
+      "behavior": "修复日志查看器可读性：强制 dark color-scheme，日志行默认浅色文字",
+      "verification": "node scripts/verify-local-f07.mjs",
+      "state": "passing",
+      "evidence": {
+        "verified_at": "2026-08-27T07:34:58.245Z",
+        "command": "node scripts/verify-local-f07.mjs",
+        "exit_code": 0
+      },
+      "active_at": "2026-08-27T07:34:57.936Z"
+    },
+    {
+      "id": "F08",
+      "behavior": "新增 Wikipedia/Wikidata 知识工具 + 最终答案抽取器：研究员/反驳者可查询百科与结构化事实，报告生成后抽取简洁最终答案并写入 evidence.json",
+      "verification": "node scripts/verify-local-f08.mjs",
+      "state": "passing",
+      "active_at": "2026-08-27T07:42:31.344Z",
+      "evidence": {
+        "verified_at": "2026-08-27T08:08:26.943Z",
+        "command": "node scripts/verify-local-f08.mjs",
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "F09",
+      "behavior": "借鉴 ModSearch：接入 Firecrawl keyless 免费通道，Wikipedia/Wikidata 工具改走 Firecrawl 桥接，FirecrawlSearchTool 和 WebFetchTool 无 key 时也走 keyless",
+      "verification": "node scripts/verify-local-f09.mjs",
+      "state": "passing",
+      "active_at": "2026-08-27T09:42:21.033Z",
+      "evidence": {
+        "verified_at": "2026-08-27T09:55:22.887Z",
+        "command": "node scripts/verify-local-f09.mjs",
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "F10",
+      "behavior": "Firecrawl 省额度策略：默认研究只用 Baidu/Bing/Wikipedia/Wikidata，Reflector 质量门不达标触发 augment 时才启用 Firecrawl/Tavily",
+      "verification": "node scripts/verify-local-f10.mjs",
+      "state": "passing",
+      "active_at": "2026-08-28T00:34:02.702Z",
+      "evidence": {
+        "verified_at": "2026-08-28T00:57:56.543Z",
+        "command": "node scripts/verify-local-f10.mjs",
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "F11",
+      "behavior": "轻量每轮搜索质量门：研究员调用 Baidu/Bing 结果过少或全错时，自动解锁 Firecrawl/Wikipedia/Wikidata，无需等整轮 Reflector",
+      "verification": "node scripts/verify-local-f11.mjs",
+      "state": "passing",
+      "active_at": "2026-08-28T02:09:29.166Z",
+      "evidence": {
+        "verified_at": "2026-08-28T05:48:18.810Z",
+        "command": "node scripts/verify-local-f11.mjs",
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "F12",
+      "behavior": "查询规划器：先分析问题类型，生成按类型区分的搜索方案（子查询、优先源、验证方式），并注入研究员任务",
+      "verification": "node scripts/verify-local-f12.mjs",
+      "state": "passing",
+      "active_at": "2026-08-28T05:48:18.893Z",
+      "evidence": {
+        "verified_at": "2026-08-28T05:52:28.743Z",
+        "command": "node scripts/verify-local-f12.mjs",
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "F13",
+      "behavior": "修复日志页面自动更新卡住（请求超时/防重叠/防过期响应/回到前台立即刷新）并提高日志文字与背景对比度",
+      "verification": "node scripts/verify-local-f13.mjs",
+      "state": "passing",
+      "active_at": "2026-08-28T06:33:09.702Z",
+      "evidence": {
+        "verified_at": "2026-08-31T06:56:50.361Z",
+        "command": "node scripts/verify-local-f13.mjs",
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "F14",
+      "behavior": "候选答案验证循环：仅对 entity_fact / multi_hop_clue / historical_archive 等适合题型启用，对候选逐条验证并输出 final_candidate",
+      "verification": "node scripts/verify-local-f14.mjs",
+      "state": "passing",
+      "active_at": "2026-08-28T06:38:14.642Z",
+      "evidence": {
+        "verified_at": "2026-08-28T06:50:48.833Z",
+        "command": "node scripts/verify-local-f14.mjs",
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "F15",
+      "behavior": "Wayback Machine 历史档案接入：新增 wayback_lookup 工具，通过 Firecrawl keyless 查询历史快照并可抓取旧页面内容",
+      "verification": "node scripts/verify-local-f15.mjs",
+      "state": "passing",
+      "active_at": "2026-08-31T08:41:20.515Z",
+      "evidence": {
+        "verified_at": "2026-08-31T08:44:10.224Z",
+        "command": "node scripts/verify-local-f15.mjs",
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "F16",
+      "behavior": "自动评测 Judge：新增 scripts/eval_judge.py 和 make judge，用 DeepSeek 对比 final_answer 与 gold，输出 yes/partial/no 和分数",
+      "verification": "node scripts/verify-local-f16.mjs",
+      "state": "passing",
+      "active_at": "2026-08-31T08:44:37.248Z",
+      "evidence": {
+        "verified_at": "2026-08-31T08:46:46.735Z",
+        "command": "node scripts/verify-local-f16.mjs",
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "F17",
+      "behavior": "Verifier 主动搜索 + 矛盾裁决器：Verifier 增加搜索工具，并在跨视角矛盾时用专门 Agent 裁决",
+      "verification": "node scripts/verify-local-f17.mjs",
+      "state": "passing",
+      "active_at": "2026-08-31T08:48:13.417Z",
+      "evidence": {
+        "verified_at": "2026-08-31T08:49:56.105Z",
+        "command": "node scripts/verify-local-f17.mjs",
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "F18",
+      "behavior": "候选验证结果归一化：兼容 LLM 返回单个候选对象而非 candidates 数组，避免 candidates=0",
+      "verification": "node scripts/verify-local-f18.mjs",
+      "state": "passing",
+      "active_at": "2026-09-01T07:33:34.769Z",
+      "evidence": {
+        "verified_at": "2026-09-01T07:58:52.165Z",
+        "command": "node scripts/verify-local-f18.mjs",
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "F19",
+      "behavior": "事件溯源（Event Sourcing）：原子动作不可变事件化、因果链追踪、确定性回滚 rollback_to(event_id)",
+      "verification": "node scripts/verify-local-f19.mjs",
+      "state": "passing",
+      "active_at": "2026-09-02T00:38:11.851Z",
+      "evidence": {
+        "verified_at": "2026-09-02T00:40:22.358Z",
+        "command": "node scripts/verify-local-f19.mjs",
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "F19-2",
+      "behavior": "因果回溯引擎：从最终声明定位污染源事件，输出可疑事件链和污染评分",
+      "verification": "node scripts/verify-local-f19-2.mjs",
+      "state": "passing",
+      "active_at": "2026-09-02T01:00:13.466Z",
+      "evidence": {
+        "verified_at": "2026-09-02T01:02:40.925Z",
+        "command": "node scripts/verify-local-f19-2.mjs",
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "F19-3",
+      "behavior": "确定性缓存与重放：输出缓存 + ReplayEngine，支持从事件前缀重放并复用已缓存结果",
+      "verification": "node scripts/verify-local-f19-3.mjs",
+      "state": "passing",
+      "active_at": "2026-09-02T01:03:21.434Z",
+      "evidence": {
+        "verified_at": "2026-09-02T01:05:40.554Z",
+        "command": "node scripts/verify-local-f19-3.mjs",
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "F19-4",
+      "behavior": "分支级回滚与 API：计算受影响/未受影响分支，提供 events / rollback / trace API",
+      "verification": "node scripts/verify-local-f19-4.mjs",
+      "state": "passing",
+      "active_at": "2026-09-02T01:07:43.840Z",
+      "evidence": {
+        "verified_at": "2026-09-02T01:10:31.599Z",
+        "command": "node scripts/verify-local-f19-4.mjs",
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "F19-5",
+      "behavior": "实际执行 rollback：清除受影响分支缓存、写入回滚状态，并扩展 /rollback 支持 execute",
+      "verification": "node scripts/verify-local-f19-5.mjs",
+      "state": "passing",
+      "active_at": "2026-09-02T01:11:28.741Z",
+      "evidence": {
+        "verified_at": "2026-09-02T01:15:00.323Z",
+        "command": "node scripts/verify-local-f19-5.mjs",
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "F19-6",
+      "behavior": "重放受影响分支：回滚后自动重放受影响的外部工具调用（搜索/抓取），记录新结果并更新回滚状态",
+      "verification": "node scripts/verify-local-f19-6.mjs",
+      "state": "passing",
+      "active_at": "2026-09-02T01:16:01.837Z",
+      "evidence": {
+        "verified_at": "2026-09-02T01:20:22.751Z",
+        "command": "node scripts/verify-local-f19-6.mjs",
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "F19-7",
+      "behavior": "重放 LLM + 重新生成报告：回滚+重放工具后重新运行合成阶段，更新报告和 evidence",
+      "verification": "node scripts/verify-local-f19-7.mjs",
+      "state": "passing",
+      "active_at": "2026-09-02T01:21:59.685Z",
+      "evidence": {
+        "verified_at": "2026-09-02T01:24:56.292Z",
+        "command": "node scripts/verify-local-f19-7.mjs",
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "F19-8",
+      "behavior": "日志/前端事件查看和回滚入口：日志页新增事件/回滚页签，可查看事件、执行回滚/重放/重新生成",
+      "verification": "node scripts/verify-local-f19-8.mjs",
+      "state": "passing",
+      "active_at": "2026-09-02T01:26:38.356Z",
+      "evidence": {
+        "verified_at": "2026-09-02T01:27:39.735Z",
+        "command": "node scripts/verify-local-f19-8.mjs",
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "F20",
+      "behavior": "Verifier 状态容错归一化 + Researcher JSON 输出约束/重试提示强化",
+      "verification": "node scripts/verify-local-f20.mjs",
+      "state": "passing",
+      "active_at": "2026-09-02T02:15:10.171Z",
+      "evidence": {
+        "verified_at": "2026-09-02T02:19:01.548Z",
+        "command": "node scripts/verify-local-f20.mjs",
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "F21",
+      "behavior": "Claim 级溯源 Phase A：新增 ClaimNode/AnswerDocument 数据模型与 ClaimAnnotator，从最终报告抽取可追溯 claims 并写入 claims.json，不改写报告原文",
+      "verification": "node scripts/verify-local-f21.mjs",
+      "state": "passing",
+      "active_at": "2026-09-02T02:38:04.005Z",
+      "evidence": {
+        "verified_at": "2026-09-02T02:45:47.172Z",
+        "command": "node scripts/verify-local-f21.mjs",
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "F22",
+      "behavior": "Claim 级溯源 Phase B：对未覆盖/未验证的 claim 做原子验证，使用搜索工具逐条核查并更新 claims.json 的状态、置信度、证据与事件 ID",
+      "verification": "node scripts/verify-local-f22.mjs",
+      "state": "passing",
+      "active_at": "2026-09-02T02:55:49.636Z",
+      "evidence": {
+        "verified_at": "2026-09-02T03:05:08.069Z",
+        "command": "node scripts/verify-local-f22.mjs",
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "F23",
+      "behavior": "Claim 级溯源 Phase C：新增 /research/{run_id}/claims 与 /claims/{claim_id}/trace API，以及报告证据双视图页面（流畅版/证据版），支持点击 claim 查看证据链与事件回溯",
+      "verification": "node scripts/verify-local-f23.mjs",
+      "state": "passing",
+      "active_at": "2026-09-02T03:17:15.102Z",
+      "evidence": {
+        "verified_at": "2026-09-02T03:20:13.889Z",
+        "command": "node scripts/verify-local-f23.mjs",
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "F24",
+      "behavior": "Claim 级溯源 Phase D：新增 scripts/eval_claims.py 指标评估与规则粒度审计、data/claim_golden.json 黄金拆分样例、make eval-claims 目标",
+      "verification": "node scripts/verify-local-f24.mjs",
+      "state": "passing",
+      "active_at": "2026-09-02T06:30:20.839Z",
+      "evidence": {
+        "verified_at": "2026-09-02T06:33:24.108Z",
+        "command": "node scripts/verify-local-f24.mjs",
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "F25",
+      "behavior": "修复主报告页看不到证据/来源 URL 不可点击：在 index.html 报告下方展示 claim 证据卡片、裸 URL 自动可点击，并提供跳转证据版入口",
+      "verification": "node scripts/verify-local-f25.mjs",
+      "state": "passing",
+      "active_at": "2026-09-02T06:54:08.938Z",
+      "evidence": {
+        "verified_at": "2026-09-02T07:08:57.010Z",
+        "command": "node scripts/verify-local-f25.mjs",
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "F26",
+      "behavior": "Verifier 增强：新增独立二次核查员，区分事实状态与表述问题，对第一轮非全 verified 的卡片做二次独立验证并合并结果",
+      "verification": "node scripts/verify-local-f26.mjs",
+      "state": "passing",
+      "active_at": "2026-09-02T07:15:39.606Z",
+      "evidence": {
+        "verified_at": "2026-09-02T07:24:49.724Z",
+        "command": "node scripts/verify-local-f26.mjs",
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "F27",
+      "behavior": "日志页自动刷新增强：autoTail 开启时无论当前是 tail/search 都持续刷新，增加看门狗强制重载，回到前台时重置 busy 并重启定时器",
+      "verification": "node scripts/verify-local-f27.mjs",
+      "state": "passing",
+      "active_at": "2026-09-02T07:43:31.434Z",
+      "evidence": {
+        "verified_at": "2026-09-02T07:44:01.320Z",
+        "command": "node scripts/verify-local-f27.mjs",
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "F28",
+      "behavior": "Researcher 输出救捞：当 Researcher 多次输出非 JSON 后，用无工具格式化 Agent 将 Markdown/散文转换为标准 JSON 研究卡，减少 all attempts exhausted",
+      "verification": "node scripts/verify-local-f28.mjs",
+      "state": "passing",
+      "active_at": "2026-09-02T08:42:54.095Z",
+      "evidence": {
+        "verified_at": "2026-09-02T08:44:53.239Z",
+        "command": "node scripts/verify-local-f28.mjs",
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "F29",
+      "behavior": "Agent 独立性治理 Phase 1：新增 AgentPolicy 数据模型与默认策略，create_agent 自动为每个 Agent 附加 Policy（仅元数据，不改变行为）",
+      "verification": "node scripts/verify-local-f29.mjs",
+      "state": "passing",
+      "active_at": "2026-09-02T09:51:30.488Z",
+      "evidence": {
+        "verified_at": "2026-09-02T09:55:34.555Z",
+        "command": "node scripts/verify-local-f29.mjs",
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "F30",
+      "behavior": "Agent 独立性治理 Phase 2：新增 ScopedBlackboard 按 ContextPolicy 限制读写，Agent 工具调用前按 ToolPolicy 检查允许/禁止/配额",
+      "verification": "node scripts/verify-local-f30.mjs",
+      "state": "passing",
+      "active_at": "2026-09-02T09:55:45.162Z",
+      "evidence": {
+        "verified_at": "2026-09-02T10:02:05.916Z",
+        "command": "node scripts/verify-local-f30.mjs",
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "F31",
+      "behavior": "Agent 独立性治理 Phase 3：ResourceBudget 真正限制工具/LLM/token/成本，策略拒绝写入 logs/policy_audit.jsonl",
+      "verification": "node scripts/verify-local-f31.mjs",
+      "state": "passing",
+      "active_at": "2026-09-03T00:50:38.820Z",
+      "evidence": {
+        "verified_at": "2026-09-03T00:52:28.307Z",
+        "command": "node scripts/verify-local-f31.mjs",
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "F32",
+      "behavior": "Agent 独立性治理 Phase 4：VerificationStandard 渲染为系统提示中的验证标准块，不同 Agent 使用 Policy 定义的评分 rubric",
+      "verification": "node scripts/verify-local-f32.mjs",
+      "state": "passing",
+      "active_at": "2026-09-03T00:53:57.608Z",
+      "evidence": {
+        "verified_at": "2026-09-03T00:55:47.516Z",
+        "command": "node scripts/verify-local-f32.mjs",
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "F33",
+      "behavior": "Agent 独立性治理 Phase 5：second-opinion/contradiction-adjudicator 的 ContextPolicy 限制 Blackboard 读写，运行时无法读取第一轮结论等 run 数据",
+      "verification": "node scripts/verify-local-f33.mjs",
+      "state": "passing",
+      "active_at": "2026-09-03T01:27:02.521Z",
+      "evidence": {
+        "verified_at": "2026-09-03T01:29:17.195Z",
+        "command": "node scripts/verify-local-f33.mjs",
+        "exit_code": 0
+      }
+    },
+    {
+      "id": "F34",
+      "behavior": "自适应计算分配：新增 adaptive.py 按问题类型/角色/关键词生成 ComputeAllocation，映射为 Researcher ResourceBudget；质量门补强轮按卡弱点动态选卡和分配预算",
+      "verification": "node scripts/verify-local-f34.mjs",
+      "state": "passing",
+      "active_at": "2026-09-03T02:00:00.000Z",
+      "evidence": {
+        "verified_at": "2026-09-03T01:40:30.527Z",
+        "command": "node scripts/verify-local-f34.mjs",
+        "exit_code": 0
+      }
+    }
+  ]
+}

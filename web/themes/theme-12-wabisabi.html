@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>STYLE 12 · 日式和风 — Deep Research 主题预览</title>
+<style>
+/* 12 日式和风 — 米色木色、禅意留白 */
+:root { --bg:#f3efe6; --card:#faf8f2; --border:#dcd5c3; --text:#3f3a32; --dim:#9c9382;
+  --green:#6b7f5e; --red:#b4533d; --wood:#b99a77; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:"Hiragino Mincho ProN", "Songti SC", "Noto Serif SC", Georgia, serif; background:var(--bg); color:var(--text); min-height:100vh; }
+.container { max-width:820px; margin:0 auto; padding:48px 24px; }
+.style-tag { position:fixed; top:14px; right:20px; font-size:.66rem; letter-spacing:3px; color:var(--dim); z-index:9; }
+header { text-align:center; padding:40px 0 32px; }
+header h1 { font-size:1.9rem; font-weight:600; letter-spacing:6px; color:#4a443a; }
+header p { color:var(--dim); margin-top:10px; font-size:.88rem; letter-spacing:1px; }
+.submit-box { background:var(--card); border:1px solid var(--border); border-radius:4px; padding:26px; margin-bottom:28px;
+  box-shadow:0 2px 14px rgba(0,0,0,.03); }
+.submit-box textarea { width:100%; background:transparent; border:1px solid var(--border); border-radius:3px;
+  padding:13px 15px; font-size:.95rem; resize:vertical; min-height:78px; font-family:inherit; color:var(--text); }
+.submit-box textarea:focus { outline:none; border-color:var(--green); }
+.submit-box button { margin-top:14px; background:var(--green); color:#faf8f2; border:none; border-radius:3px;
+  padding:11px 30px; font-size:.92rem; letter-spacing:2px; cursor:pointer; font-family:inherit; }
+.stream-panel { background:var(--card); border:1px solid var(--border); border-radius:4px; margin-bottom:24px; overflow:hidden; }
+.stream-head { display:flex; align-items:center; gap:10px; padding:13px 18px; font-weight:600; letter-spacing:1px; font-size:.9rem; border-bottom:1px solid var(--border); }
+.stream-phase { flex:1; text-align:right; color:var(--green); font-size:.8rem; font-weight:400; }
+.stream-toggle { color:var(--dim); }
+.stream-body { padding:12px 18px 14px; font-family:Consolas, monospace; font-size:.76rem; line-height:2; color:#7a7262; }
+.stream-line.strong { color:var(--text); font-weight:700; }
+.stream-line.dim { color:#d3ccbc; }
+.status-bar { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; }
+.status-bar h2 { font-size:1.05rem; font-weight:600; letter-spacing:2px; }
+.auto-badge { font-size:.74rem; color:var(--dim); display:flex; align-items:center; gap:6px; }
+.auto-badge .dot { width:6px; height:6px; border-radius:50%; background:var(--green); animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.3} }
+.run-list { display:flex; flex-direction:column; gap:10px; }
+.run-card { background:var(--card); border:1px solid var(--border); border-radius:4px; padding:16px 20px; cursor:pointer; }
+.run-card:hover { border-color:var(--wood); }
+.run-card .top { display:flex; align-items:center; justify-content:space-between; gap:12px; }
+.run-card .q { font-weight:600; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.run-card .meta { display:flex; align-items:center; gap:12px; font-size:.78rem; color:var(--dim); flex-shrink:0; }
+.badge { display:inline-block; padding:2px 11px; border-radius:999px; font-size:.7rem; border:1px solid var(--border); color:var(--dim); }
+.badge-completed { color:var(--green); border-color:rgba(107,127,94,.4); }
+.badge-researching { color:var(--red); border-color:rgba(180,83,61,.4); }
+.badge-failed { color:#a05545; border-color:rgba(160,85,69,.4); }
+.detail { background:var(--card); border:1px solid var(--border); border-radius:4px; padding:18px 22px; margin-top:12px; }
+.detail .stats { display:flex; gap:30px; margin:12px 0; }
+.detail .stats .stat .val { font-size:1.4rem; font-weight:600; }
+.detail .stats .stat .lbl { font-size:.7rem; color:var(--dim); letter-spacing:1px; }
+.detail .report { margin-top:14px; font-size:.92rem; line-height:1.85; color:#7a7262; }
+.detail .report h2 { font-weight:600; margin-bottom:8px; color:var(--text); }
+.detail .report a { color:var(--green); }
+.detail .report blockquote { border-left:2px solid var(--wood); margin:8px 0; padding:4px 14px; color:var(--dim); font-style:italic; }
+.detail .report code { background:rgba(107,127,94,.08); padding:2px 6px; font-size:.85em; font-family:Consolas, monospace; }
+.detail .report pre { background:rgba(255,255,255,.6); border:1px solid var(--border); padding:12px; overflow-x:auto; font-family:Consolas, monospace; }
+@media (max-width:600px) { .run-card .top { flex-direction:column; align-items:flex-start; gap:6px; } }
+</style>
+</head>
+<body>
+<div class="style-tag">STYLE 12 · 日式和风</div>
+<div class="container">
+  <header>
+    <h1>&#128269; Deep Research</h1>
+    <p>多智能体深度研究 — 输入问题，获得一份有来源引用的综合报告</p>
+  </header>
+
+  <div class="submit-box">
+    <textarea placeholder="输入你想研究的问题，例如：自建NAS的作用和价格、时序大模型哪个好..."></textarea>
+    <button>开始研究</button>
+  </div>
+
+  <div class="stream-panel">
+    <div class="stream-head"><span>&#128225; 实时进度</span><span class="stream-phase">&#128269; 研究中</span><span class="stream-toggle">&#9662;</span></div>
+    <div class="stream-body">
+      <div class="stream-line strong">━━━ 🔍 研究中 ━━━</div>
+      <div class="stream-line">▶ 编排</div>
+      <div class="stream-line dim">📋 视角构成(技术类): 原理拆解·技术专家、部署配置·技术专家、性能短板·批判者</div>
+      <div class="stream-line">🔎 研究员·原理拆解 → bing_search:「Qwen3.6-35B-A3B architecture」</div>
+      <div class="stream-line">📄 研究员·原理拆解 ← bing_search:「1. Qwen3.6-35B-A3B URL: https://huggingface.co/...」</div>
+      <div class="stream-line">✔ 研究员·原理拆解 完成 — 4,500 tokens / $0.002</div>
+    </div>
+  </div>
+
+  <div class="status-bar"><h2>研究记录</h2><span class="auto-badge"><span class="dot"></span>自动刷新中</span></div>
+
+  <div class="run-list">
+    <div class="run-card">
+      <div class="top"><span class="q">Qwen3.6-35B-A3B 是什么，部署需要什么硬件？</span>
+        <span class="meta"><span>14:32</span><span>18 发现 · 12 验证 · 82分</span><span class="badge badge-completed">已完成</span></span></div>
+      <div class="detail open">
+        <div class="stats">
+          <div class="stat"><div class="val">18</div><div class="lbl">发现</div></div>
+          <div class="stat"><div class="val">12</div><div class="lbl">验证</div></div>
+          <div class="stat"><div class="val">82</div><div class="lbl">评分</div></div>
+          <div class="stat"><div class="val">已完成</div><div class="lbl">状态</div></div>
+        </div>
+        <div class="report">
+          <h2>Qwen3.6-35B-A3B 概览</h2>
+          <p>这是报告摘要。<strong>MoE 架构</strong>，35B 总参 3B 激活，2026 年 4 月开源。<a href="#">查看来源</a></p>
+          <blockquote>引用示例：INT4 量化后单卡 80GB 可推理。</blockquote>
+          <pre><code>vllm serve Qwen/Qwen3.6-35B-A3B</code></pre>
+        </div>
+      </div>
+    </div>
+    <div class="run-card">
+      <div class="top"><span class="q">自建 NAS 的成本与长期维护</span>
+        <span class="meta"><span>13:05</span><span>9 发现 · 3 验证</span><span class="badge badge-researching">搜索中</span></span></div>
+    </div>
+    <div class="run-card">
+      <div class="top"><span class="q">D2C 品牌出海值得做吗</span>
+        <span class="meta"><span>12:41</span><span>0 发现</span><span class="badge badge-failed">失败</span></span></div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

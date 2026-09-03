@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deep Research — 报告证据</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #070a12;
+    --panel: #111627;
+    --panel-2: #171e33;
+    --border: #2c3554;
+    --border-soft: #1d2338;
+    --text: #f2f6ff;
+    --dim: #aab3d6;
+    --faint: #7b84a8;
+    --accent: #39ffa0;
+    --cyan: #00d9ff;
+    --blue: #5b8cff;
+    --red: #ff5d7e;
+    --orange: #ff9f43;
+    --yellow: #ffd166;
+    --purple: #b78cff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background:
+      radial-gradient(1200px 400px at 80% -100px, rgba(57,255,160,.06), transparent),
+      var(--bg);
+    color: var(--text);
+    font: 14px/1.6 "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+    min-height: 100vh;
+    padding: 14px 16px 24px;
+  }
+  a { color: var(--cyan); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  .topbar { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
+  .logo {
+    width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center;
+    background: linear-gradient(135deg, rgba(57,255,160,.18), rgba(0,217,255,.18));
+    border: 1px solid rgba(57,255,160,.4); font-size: 17px;
+  }
+  h1 { font-size: 17px; font-weight: 600; }
+  h1 small { color: var(--dim); font-weight: 400; margin-left: 8px; font-size: 12px; }
+  .spacer { flex: 1; }
+  .backlink { font-size: 12px; color: var(--dim); }
+
+  .tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+  .tab {
+    padding: 8px 16px; border: 1px solid var(--border); border-radius: 10px;
+    background: var(--panel); cursor: pointer; color: var(--dim); font-size: 13px;
+    transition: all .15s ease;
+  }
+  .tab:hover { color: var(--text); border-color: var(--border-soft); }
+  .tab.active {
+    color: var(--accent); border-color: rgba(57,255,160,.55);
+    background: linear-gradient(180deg, rgba(57,255,160,.08), transparent);
+  }
+
+  .view { display: none; }
+  .view.active { display: block; }
+
+  .flow {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    padding: 20px 24px; max-width: 980px; margin: 0 auto;
+  }
+  .flow h1 { font-size: 22px; margin: 12px 0 8px; }
+  .flow h2 { font-size: 17px; margin: 18px 0 8px; color: var(--accent); }
+  .flow h3 { font-size: 15px; margin: 14px 0 6px; color: var(--cyan); }
+  .flow p { margin: 8px 0; }
+  .flow ul, .flow ol { margin: 8px 0 8px 24px; }
+  .flow li { margin: 4px 0; }
+  .flow blockquote { border-left: 3px solid var(--border); padding-left: 12px; color: var(--dim); margin: 8px 0; }
+  .flow code { background: var(--panel-2); border: 1px solid var(--border-soft); border-radius: 4px; padding: 1px 5px; font-size: 12px; }
+  .flow pre { background: var(--panel-2); border: 1px solid var(--border-soft); border-radius: 8px; padding: 12px; overflow: auto; }
+
+  .evidence-wrap { display: grid; grid-template-columns: minmax(0, 1fr) minmax(340px, 420px); gap: 12px; height: calc(100vh - 120px); }
+  @media (max-width: 900px) { .evidence-wrap { grid-template-columns: 1fr; height: auto; } }
+
+  .pane {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 12px;
+    overflow: auto; padding: 16px;
+  }
+  .pane-title { color: var(--dim); font-size: 12px; text-transform: uppercase; letter-spacing: .3px; margin-bottom: 10px; }
+  #evidenceText {
+    font: 13px/1.7 Consolas, "SF Mono", Menlo, "Cascadia Mono", monospace;
+    white-space: pre-wrap; word-break: break-word; color: var(--text);
+  }
+  mark {
+    background: rgba(0,217,255,.22); color: var(--text); border-radius: 3px;
+    padding: 1px 2px; cursor: pointer; border-bottom: 2px solid rgba(0,217,255,.6);
+  }
+  mark.active { background: rgba(57,255,160,.3); border-bottom-color: var(--accent); }
+
+  .claim-sup {
+    display: inline-block; min-width: 16px; height: 16px; line-height: 16px;
+    text-align: center; border-radius: 999px; font-size: 11px; font-weight: 600;
+    cursor: pointer; margin-left: 2px; vertical-align: super; font-style: normal;
+    border: 1px solid; padding: 0 3px; user-select: none;
+  }
+  .claim-sup.status-verified { color: #07130c; background: var(--accent); border-color: var(--accent); }
+  .claim-sup.status-suspect { color: #2b1200; background: var(--yellow); border-color: var(--yellow); }
+  .claim-sup.status-disputed { color: #fff; background: var(--red); border-color: var(--red); }
+  .claim-sup.status-false { color: #fff; background: var(--red); border-color: var(--red); }
+  .claim-sup.status-unverifiable { color: var(--dim); background: var(--panel-2); border-color: var(--faint); }
+
+  .claim-list { display: flex; flex-direction: column; gap: 8px; }
+  .claim-item {
+    background: var(--panel-2); border: 1px solid var(--border-soft); border-radius: 10px;
+    padding: 10px 12px; cursor: pointer; transition: all .12s ease;
+  }
+  .claim-item:hover { border-color: var(--border); }
+  .claim-item.active { border-color: var(--accent); box-shadow: 0 0 14px rgba(57,255,160,.08); }
+  .claim-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; flex-wrap: wrap; }
+  .claim-id { color: var(--faint); font-size: 11px; font-family: Consolas, monospace; }
+  .badge {
+    display: inline-block; min-width: 58px; text-align: center; padding: 1px 8px;
+    border-radius: 999px; font-size: 11px; font-weight: 600;
+  }
+  .badge.verified { color: #07130c; background: var(--accent); }
+  .badge.suspect { color: #2b1200; background: var(--yellow); }
+  .badge.disputed { color: #2b0912; background: var(--red); }
+  .badge.false { color: #fff; background: #b3002d; }
+  .badge.unverifiable { color: var(--dim); background: var(--border); }
+  .claim-text { font-size: 13px; color: var(--text); margin-bottom: 6px; }
+  .claim-meta { color: var(--faint); font-size: 11.5px; margin-bottom: 6px; }
+  .reasoning { color: var(--dim); font-size: 12px; border-left: 2px solid var(--border); padding-left: 8px; margin: 6px 0; }
+  .evidence-links { margin: 6px 0; }
+  .evidence-links a { display: inline-block; margin: 2px 6px 2px 0; font-size: 12px; word-break: break-all; }
+  .trace-btn {
+    background: var(--panel); color: var(--cyan); border: 1px solid var(--border);
+    border-radius: 6px; padding: 3px 8px; font-size: 12px; cursor: pointer;
+  }
+  .trace-btn:hover { border-color: var(--cyan); }
+  .trace-box { margin-top: 8px; background: #0a0e1a; border: 1px solid var(--border-soft); border-radius: 8px; padding: 8px; font-size: 12px; display: none; }
+  .trace-box.open { display: block; }
+  .trace-event { padding: 4px 0; border-bottom: 1px solid var(--border-soft); }
+  .trace-event:last-child { border-bottom: none; }
+  .trace-action { color: var(--accent); font-weight: 600; }
+  .trace-agent { color: var(--purple); }
+  .trace-seq { color: var(--faint); font-family: Consolas, monospace; }
+  .empty { padding: 24px; color: var(--faint); text-align: center; }
+  .error-box { color: var(--red); background: #2a1020; border: 1px solid #5c2440; padding: 12px; border-radius: 8px; margin: 12px 0; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="logo">🧭</div>
+  <div>
+    <h1>Deep Research · 报告证据<small id="runLabel"></small></h1>
+  </div>
+  <span class="spacer"></span>
+  <a class="backlink" href="/logs">← 日志查看器</a>
+</div>
+
+<div class="tabs">
+  <div class="tab active" data-view="flow">📄 流畅版</div>
+  <div class="tab" data-view="evidence">🔎 证据版</div>
+</div>
+
+<div id="errorBox" class="error-box" style="display:none"></div>
+
+<div id="view-flow" class="view active">
+  <div class="flow" id="flowView"><div class="empty">加载中…</div></div>
+</div>
+
+<div id="view-evidence" class="view">
+  <div class="evidence-wrap">
+    <div class="pane">
+      <div class="pane-title">原文（高亮 = claim span）</div>
+      <div id="evidenceText"><div class="empty">加载中…</div></div>
+    </div>
+    <div class="pane">
+      <div class="pane-title">Claims</div>
+      <div class="claim-list" id="claimList"><div class="empty">加载中…</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+const runId = decodeURIComponent(location.pathname.split('/').filter(Boolean).pop() || '');
+document.getElementById('runLabel').textContent = runId ? ' · ' + runId : '';
+
+let reportText = '';
+let claimsData = null;
+
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  }[c]));
+}
+
+function renderInline(text) {
+  let s = esc(text);
+  s = s.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener">$1</a>');
+  s = s.replace(/\*\*([^*]+)\*\*/g, '<strong>$1</strong>');
+  s = s.replace(/(^|[^*])\*([^*]+)\*/g, '$1<em>$2</em>');
+  s = s.replace(/`([^`]+)`/g, '<code>$1</code>');
+  return s;
+}
+
+function renderMarkdown(md) {
+  const lines = (md || '').split('\n');
+  let html = '';
+  let listType = '';
+  for (let i = 0; i < lines.length; i++) {
+    const line = lines[i];
+    const h = line.match(/^(#{1,6})\s+(.*)$/);
+    if (h) {
+      if (listType) { html += `</${listType}>`; listType = ''; }
+      const level = h[1].length;
+      html += `<h${level}>${renderInline(h[2])}</h${level}>`;
+      continue;
+    }
+    const ul = line.match(/^\s*[-*]\s+(.*)$/);
+    if (ul) {
+      if (listType !== 'ul') {
+        if (listType) html += `</${listType}>`;
+        html += '<ul>'; listType = 'ul';
+      }
+      html += `<li>${renderInline(ul[1])}</li>`;
+      continue;
+    }
+    const ol = line.match(/^\s*\d+\.\s+(.*)$/);
+    if (ol) {
+      if (listType !== 'ol') {
+        if (listType) html += `</${listType}>`;
+        html += '<ol>'; listType = 'ol';
+      }
+      html += `<li>${renderInline(ol[1])}</li>`;
+      continue;
+    }
+    const bq = line.match(/^\s*>\s?(.*)$/);
+    if (bq) {
+      if (listType) { html += `</${listType}>`; listType = ''; }
+      html += `<blockquote>${renderInline(bq[1])}</blockquote>`;
+      continue;
+    }
+    if (line.trim() === '') {
+      if (listType) { html += `</${listType}>`; listType = ''; }
+      continue;
+    }
+    if (listType) { html += `</${listType}>`; listType = ''; }
+    html += `<p>${renderInline(line)}</p>`;
+  }
+  if (listType) html += `</${listType}>`;
+  return html;
+}
+
+function renderMarkdownWithClaims(md, claimsData) {
+  const claims = (claimsData?.claims || []).filter(c =>
+    c && c.span && typeof c.span.start === 'number' && typeof c.span.end === 'number' &&
+    c.span.start >= 0 && c.span.end > c.span.start
+  );
+  if (!md || !claims.length) return renderMarkdown(md || '');
+  const sorted = claims.slice().sort((a, b) => b.span.end - a.span.end);
+  const tokens = [];
+  let text = md;
+  for (let i = 0; i < sorted.length; i++) {
+    const c = sorted[i];
+    const token = '\u0001R' + i + '\u0002';
+    tokens.push({ token, claim: c, index: claims.indexOf(c) + 1 });
+    const end = Math.min(c.span.end, text.length);
+    text = text.slice(0, end) + token + text.slice(end);
+  }
+  let html = renderMarkdown(text);
+  for (const t of tokens) {
+    const status = claimColorClass(t.claim);
+    html = html.split(t.token).join(
+      `<sup class="claim-sup status-${status}" data-claim="${esc(t.claim.claim_id)}" title="${esc(t.claim.text)}">${t.index}</sup>`
+    );
+  }
+  return html;
+}
+
+function buildEvidenceText() {
+  const container = document.getElementById('evidenceText');
+  if (!reportText) {
+    container.innerHTML = '<div class="empty">无报告</div>';
+    return;
+  }
+  const claims = (claimsData?.claims || []).slice().sort((a, b) => (a.span?.start || 0) - (b.span?.start || 0));
+  let html = '';
+  let pos = 0;
+  for (const c of claims) {
+    const start = c.span?.start;
+    const end = c.span?.end;
+    if (typeof start !== 'number' || typeof end !== 'number' || start < pos || start >= end) continue;
+    html += esc(reportText.slice(pos, start));
+    html += `<mark data-claim="${esc(c.claim_id)}" title="${esc(c.text)}">${esc(reportText.slice(start, end))}</mark>`;
+    pos = end;
+  }
+  html += esc(reportText.slice(pos));
+  container.innerHTML = html || '<div class="empty">无高亮</div>';
+}
+
+function statusClass(status) {
+  const s = String(status || '').toLowerCase();
+  if (['verified', 'suspect', 'disputed', 'false', 'unverifiable'].includes(s)) return s;
+  return 'unverifiable';
+}
+
+function claimColorClass(c) {
+  const status = String(c.status || '').toLowerCase();
+  if (status === 'disputed' || status === 'false') return 'disputed';
+  const conf = Number(c.confidence ?? 0);
+  if (conf >= 70) return 'verified';
+  if (conf >= 40) return 'suspect';
+  if (conf > 0) return 'disputed';
+  return 'unverifiable';
+}
+
+function badge(status) {
+  const s = String(status || 'unverifiable');
+  return `<span class="badge ${statusClass(s)}">${esc(s)}</span>`;
+}
+
+function claimBadge(c) {
+  const status = String(c.status || 'unverifiable');
+  return `<span class="badge ${claimColorClass(c)}">${esc(status)}</span>`;
+}
+
+function renderClaimList() {
+  const container = document.getElementById('claimList');
+  const claims = claimsData?.claims || [];
+  if (!claims.length) {
+    container.innerHTML = '<div class="empty">无 claims</div>';
+    return;
+  }
+  container.innerHTML = claims.map(c => `
+    <div class="claim-item" data-claim="${esc(c.claim_id)}">
+      <div class="claim-head">
+        <span class="claim-id">${esc(c.claim_id)}</span>
+        ${claimBadge(c)}
+        <span class="claim-meta">置信度 ${Number(c.confidence ?? 0)}</span>
+      </div>
+      <div class="claim-text">${esc(c.text)}</div>
+      ${c.reasoning ? `<div class="reasoning">${esc(c.reasoning)}</div>` : ''}
+      ${(c.evidence_links || []).length ? `<div class="evidence-links">${c.evidence_links.map(e => `<a href="${esc(e.url)}" target="_blank" rel="noopener">${esc(e.url)}</a>`).join('')}</div>` : ''}
+      ${(c.event_ids || []).length ? `<button class="trace-btn" data-trace="${esc(c.claim_id)}">🔗 事件链 (${c.event_ids.length})</button><div class="trace-box" id="trace-${esc(c.claim_id)}"></div>` : ''}
+    </div>
+  `).join('');
+}
+
+function setActiveClaim(claimId) {
+  document.querySelectorAll('#evidenceText mark').forEach(m => m.classList.toggle('active', m.dataset.claim === claimId));
+  document.querySelectorAll('.claim-item').forEach(el => el.classList.toggle('active', el.dataset.claim === claimId));
+}
+
+async function loadTrace(claimId, btn) {
+  const box = document.getElementById('trace-' + claimId);
+  if (!box) return;
+  if (box.classList.contains('open')) {
+    box.classList.remove('open');
+    return;
+  }
+  box.classList.add('open');
+  if (box.dataset.loaded) return;
+  box.innerHTML = '<div class="empty">加载中…</div>';
+  try {
+    const res = await fetch(`/research/${encodeURIComponent(runId)}/claims/${encodeURIComponent(claimId)}/trace`);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+    const chains = data.chains || [];
+    if (!chains.length) {
+      box.innerHTML = '<div class="empty">无事件链</div>';
+    } else {
+      box.innerHTML = chains.map(chain => `
+        <div class="trace-event">
+          <span class="trace-action">${esc(chain.event?.action || '?')}</span>
+          <span class="trace-agent">${esc(chain.event?.agent || '')}</span>
+          <span class="trace-seq">#${chain.event?.seq ?? ''}</span>
+          <div class="claim-meta">${esc(chain.event?.payload_preview || '')}</div>
+        </div>
+      `).join('');
+    }
+    box.dataset.loaded = '1';
+  } catch (err) {
+    box.innerHTML = `<div class="error-box">加载失败：${esc(err.message)}</div>`;
+  }
+}
+
+document.querySelectorAll('.tab').forEach(tab => {
+  tab.addEventListener('click', () => {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    tab.classList.add('active');
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    document.getElementById('view-' + tab.dataset.view).classList.add('active');
+    if (tab.dataset.view === 'evidence' && !document.getElementById('evidenceText').dataset.built) {
+      buildEvidenceText();
+      document.getElementById('evidenceText').dataset.built = '1';
+    }
+  });
+});
+
+document.addEventListener('click', (e) => {
+  const sup = e.target.closest('.claim-sup[data-claim]');
+  if (sup) {
+    const claimId = sup.dataset.claim;
+    // Switch to the evidence view and highlight the corresponding claim.
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    const evTab = document.querySelector('.tab[data-view="evidence"]');
+    if (evTab) evTab.classList.add('active');
+    document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+    const evView = document.getElementById('view-evidence');
+    if (evView) evView.classList.add('active');
+    if (!document.getElementById('evidenceText').dataset.built) {
+      buildEvidenceText();
+      document.getElementById('evidenceText').dataset.built = '1';
+    }
+    setActiveClaim(claimId);
+    const item = document.querySelector(`.claim-item[data-claim="${CSS.escape(claimId)}"]`);
+    if (item) item.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    return;
+  }
+  const mark = e.target.closest('mark[data-claim]');
+  if (mark) {
+    setActiveClaim(mark.dataset.claim);
+    const item = document.querySelector(`.claim-item[data-claim="${CSS.escape(mark.dataset.claim)}"]`);
+    if (item) item.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    return;
+  }
+  const item = e.target.closest('.claim-item[data-claim]');
+  if (item) {
+    const claimId = item.dataset.claim;
+    setActiveClaim(claimId);
+    const markEl = document.querySelector(`#evidenceText mark[data-claim="${CSS.escape(claimId)}"]`);
+    if (markEl) markEl.scrollIntoView({ block: 'center', behavior: 'smooth' });
+    return;
+  }
+  const btn = e.target.closest('.trace-btn[data-trace]');
+  if (btn) {
+    e.stopPropagation();
+    loadTrace(btn.dataset.trace, btn);
+  }
+});
+
+async function init() {
+  if (!runId) {
+    document.getElementById('errorBox').style.display = 'block';
+    document.getElementById('errorBox').textContent = '缺少 Run ID';
+    return;
+  }
+  try {
+    const [reportRes, claimsRes] = await Promise.all([
+      fetch(`/research/${encodeURIComponent(runId)}/report`),
+      fetch(`/research/${encodeURIComponent(runId)}/claims`)
+    ]);
+    if (!reportRes.ok) throw new Error('报告加载失败 HTTP ' + reportRes.status);
+    if (!claimsRes.ok) throw new Error('Claims 加载失败 HTTP ' + claimsRes.status);
+    reportText = await reportRes.text();
+    claimsData = await claimsRes.json();
+    document.getElementById('flowView').innerHTML = renderMarkdownWithClaims(reportText, claimsData);
+    document.getElementById('runLabel').textContent = ' · ' + runId + ' · 置信度 ' + (claimsData.overall_confidence ?? '?');
+    renderClaimList();
+    buildEvidenceText();
+    document.getElementById('evidenceText').dataset.built = '1';
+  } catch (err) {
+    document.getElementById('errorBox').style.display = 'block';
+    document.getElementById('errorBox').textContent = err.message;
+  }
+}
+
+init();
+</script>
+</body>
+</html>

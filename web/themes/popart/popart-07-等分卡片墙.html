@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>POP 07 — Deep Research 波普布局预览</title>
+<style>
+/* POP 07 等分卡片墙 — 奶油漫画 */
+:root { --cream:#fff4e0; --yellow:#ffd93d; --pink:#ff6b9d; --blue:#4ecdc4; --red:#ff4b4b; --ink:#1a1a1a; --bg:#fdf6e9; }
+* { margin:0; padding:0; box-sizing:border-box; }
+body { font-family:"Comic Sans MS", "Arial Black", "Microsoft YaHei", sans-serif; background:var(--bg); color:var(--ink); min-height:100vh;
+  background-image:radial-gradient(circle, rgba(26,26,26,.06) 1.5px, transparent 1.5px); background-size:24px 24px; }
+.container { max-width:1000px; margin:0 auto; padding:32px 20px; }
+.style-tag { position:fixed; top:14px; right:20px; font-size:.68rem; font-weight:900; color:var(--ink); background:var(--pink); color:#fff;
+  border:3px solid var(--ink); padding:2px 8px; z-index:9; box-shadow:4px 4px 0 var(--ink); }
+header { text-align:center; padding:22px 0 18px; }
+header h1 { font-size:2.1rem; font-weight:900; text-shadow:4px 4px 0 var(--yellow), -3px -3px 0 var(--blue); }
+header p { margin-top:8px; font-size:.9rem; font-weight:700; }
+.submit-box { background:var(--cream); border:4px solid var(--ink); border-radius:18px; padding:18px; margin-bottom:20px; box-shadow:8px 8px 0 var(--ink); }
+.submit-box textarea { width:100%; background:#fff; border:3px solid var(--ink); border-radius:10px; padding:11px 14px; font-size:.95rem; resize:vertical; min-height:66px; font-family:inherit; color:var(--ink); }
+.submit-box button { margin-top:12px; background:var(--blue); color:var(--ink); border:3px solid var(--ink); border-radius:999px; padding:10px 26px; font-size:1rem; font-weight:900; cursor:pointer; box-shadow:4px 4px 0 var(--ink); }
+.card-wall { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:20px; }
+.wall-card { border:4px solid var(--ink); border-radius:14px; padding:18px; box-shadow:6px 6px 0 var(--ink); display:flex; flex-direction:column; gap:9px; min-height:150px; }
+.wall-a { background:var(--yellow); } .wall-b { background:var(--blue); } .wall-c { background:var(--pink); color:#fff; } .wall-d { background:#fff; }
+.wall-card .q { font-weight:900; }
+.wall-card .meta { font-size:.76rem; font-weight:800; opacity:.75; }
+.badge { align-self:flex-start; display:inline-block; padding:2px 10px; font-size:.7rem; font-weight:900; background:#fff; border:2px solid var(--ink); border-radius:999px; }
+.badge-completed { color:#0a7d4c; } .badge-researching { color:#0b5fa5; } .badge-failed { color:var(--red); }
+.stream-panel { background:#fff; border:4px solid var(--ink); border-radius:14px; box-shadow:8px 8px 0 var(--ink); overflow:hidden; }
+.stream-head { display:flex; align-items:center; gap:8px; padding:11px 14px; font-weight:900; background:var(--yellow); border-bottom:3px solid var(--ink); }
+.stream-phase { flex:1; text-align:right; font-size:.8rem; }
+.stream-body { padding:10px 14px 12px; font-family:Consolas, monospace; font-size:.75rem; line-height:1.85; font-weight:700; }
+.stream-line.strong { background:var(--blue); display:inline-block; padding:1px 6px; border-radius:6px; }
+.stream-line.dim { opacity:.45; }
+@media (max-width:760px) { .card-wall { grid-template-columns:repeat(2,1fr); } }
+</style>
+</head>
+<body>
+<div class="container">
+<div class="style-tag">POP 07 · 卡片墙</div>
+<header><h1>POP DEEP RESEARCH</h1><p>研究墙 — 等大块状铺满</p></header>
+<div class="submit-box">
+  <textarea placeholder="输入你想研究的问题..."></textarea>
+  <button>开始研究</button>
+</div>
+<div class="card-wall">
+  <div class="wall-card wall-a">
+    <div class="q">Qwen3.6-35B-A3B 是什么，部署需要什么硬件？</div>
+    <div class="meta">14:32 · 18 发现 · 82分</div>
+    <div class="badge badge-completed">已完成</div>
+  </div>
+  <div class="wall-card wall-b">
+    <div class="q">自建 NAS 的成本与长期维护</div>
+    <div class="meta">13:05 · 9 发现 · 3 验证</div>
+    <div class="badge badge-researching">搜索中</div>
+  </div>
+  <div class="wall-card wall-c">
+    <div class="q">D2C 品牌出海值得做吗</div>
+    <div class="meta">12:41 · 0 发现</div>
+    <div class="badge badge-failed">失败</div>
+  </div>
+  <div class="wall-card wall-d">
+    <div class="q">时序大模型哪家强？横向对比</div>
+    <div class="meta">11:20 · 25 发现 · 90分</div>
+    <div class="badge badge-completed">已完成</div>
+  </div>
+</div>
+<div class="stream-panel">
+  <div class="stream-head"><span>📡 实时进度</span><span class="stream-phase">🔍 研究中</span></div>
+  <div class="stream-body">
+      <div class="stream-line strong">━━━ 🔍 研究中 ━━━</div>
+      <div class="stream-line">▶ 编排</div>
+      <div class="stream-line dim">📋 视角构成(技术类): 原理拆解·技术专家、部署配置·技术专家</div>
+      <div class="stream-line">🔎 研究员·原理拆解 → bing_search:「Qwen3.6-35B-A3B」</div>
+      <div class="stream-line">📄 研究员·原理拆解 ← bing_search:「1. Qwen3.6-35B-A3B URL: huggingface.co/...」</div>
+      <div class="stream-line">✔ 研究员·原理拆解 完成 — 4,500 tokens / $0.002</div>
+  </div>
+</div>
+</div>
+</body>
+</html>

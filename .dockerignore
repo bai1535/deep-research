@@ -1,0 +1,36 @@
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+dist/
+
+# Git
+.git/
+.gitignore
+
+# Environment (use env_file in compose)
+.env
+
+# Data & output (mounted as volumes)
+data/
+runs/
+logs/
+
+# Tests & dev
+tests/
+.pytest_cache/
+.superpowers/
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Docs
+*.md
+!README.md

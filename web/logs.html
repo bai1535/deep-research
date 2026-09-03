@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deep Research — Log Viewer</title>
+<style>
+  :root {
+    color-scheme: dark;
+    --bg: #070a12;
+    --panel: #111627;
+    --panel-2: #171e33;
+    --border: #2c3554;
+    --border-soft: #1d2338;
+    --text: #f2f6ff;
+    --dim: #aab3d6;
+    --faint: #7b84a8;
+    --accent: #39ffa0;
+    --cyan: #00d9ff;
+    --blue: #5b8cff;
+    --red: #ff5d7e;
+    --orange: #ff9f43;
+    --yellow: #ffd166;
+    --purple: #b78cff;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background:
+      radial-gradient(1200px 400px at 80% -100px, rgba(57,255,160,.06), transparent),
+      var(--bg);
+    color: var(--text);
+    font: 14px/1.5 "Segoe UI", "Microsoft YaHei", system-ui, sans-serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    padding: 14px 16px 0;
+  }
+  a { color: var(--cyan); text-decoration: none; }
+
+  .topbar { display: flex; align-items: center; gap: 12px; margin-bottom: 12px; }
+  .logo {
+    width: 34px; height: 34px; border-radius: 9px; display: grid; place-items: center;
+    background: linear-gradient(135deg, rgba(57,255,160,.18), rgba(0,217,255,.18));
+    border: 1px solid rgba(57,255,160,.4); font-size: 17px;
+  }
+  h1 { font-size: 17px; font-weight: 600; letter-spacing: .2px; }
+  h1 small { color: var(--dim); font-weight: 400; margin-left: 8px; font-size: 12px; }
+  .live {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 11px; color: var(--dim);
+    border: 1px solid var(--border); border-radius: 999px; padding: 3px 9px;
+  }
+  .dot { width: 7px; height: 7px; border-radius: 50%; background: var(--accent); }
+  .dot.paused { background: var(--orange); }
+  .spacer { flex: 1; }
+  .backlink { font-size: 12px; color: var(--dim); }
+
+  .tabs { display: flex; gap: 8px; margin-bottom: 12px; }
+  .tab {
+    padding: 8px 16px; border: 1px solid var(--border); border-radius: 10px;
+    background: var(--panel); cursor: pointer; color: var(--dim); font-size: 13px;
+    transition: all .15s ease;
+  }
+  .tab:hover { color: var(--text); border-color: var(--border-soft); }
+  .tab.active {
+    color: var(--accent); border-color: rgba(57,255,160,.55);
+    background: linear-gradient(180deg, rgba(57,255,160,.08), transparent);
+    box-shadow: 0 0 18px rgba(57,255,160,.08);
+  }
+
+  .panel { display: none; flex: 1; min-height: 0; flex-direction: column; }
+  .panel.active { display: flex; }
+
+  .toolbar {
+    display: flex; flex-wrap: wrap; gap: 8px; align-items: center;
+    padding: 9px 10px; margin-bottom: 8px;
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+  }
+  .toolbar label { color: var(--dim); font-size: 12px; }
+  input, select, button {
+    background: var(--panel-2); color: var(--text); border: 1px solid var(--border);
+    border-radius: 7px; padding: 6px 9px; font: inherit; font-size: 13px;
+  }
+  input:focus, select:focus { outline: none; border-color: var(--accent); }
+  input[type="text"], input[type="password"] { min-width: 150px; }
+  button { cursor: pointer; transition: all .12s ease; }
+  button:hover { border-color: var(--accent); color: var(--accent); }
+  button.ghost { background: transparent; }
+  button:disabled { opacity: .4; cursor: not-allowed; }
+
+  .chip {
+    border: 1px solid var(--border); border-radius: 999px; padding: 3px 10px;
+    font-size: 11px; color: var(--dim); background: var(--panel-2); cursor: pointer;
+  }
+  .chip.active { color: var(--text); border-color: currentColor; }
+  .chip.all.active { color: var(--cyan); border-color: var(--cyan); }
+  .chip.error.active { color: var(--red); border-color: var(--red); background: rgba(255,93,126,.08); }
+  .chip.warning.active { color: var(--yellow); border-color: var(--yellow); background: rgba(255,209,102,.07); }
+  .chip.info.active { color: var(--accent); border-color: var(--accent); background: rgba(57,255,160,.07); }
+  .chip.debug.active { color: var(--dim); border-color: var(--faint); }
+
+  .meta { color: var(--faint); font-size: 11px; margin-left: auto; white-space: nowrap; }
+  .error-box {
+    color: var(--red); background: #2a1020; border: 1px solid #5c2440;
+    padding: 10px; border-radius: 8px; margin-bottom: 10px; display: none;
+  }
+
+  .scroll {
+    flex: 1; min-height: 0; overflow: auto; border: 1px solid var(--border);
+    border-radius: 12px; background: #04060c;
+    box-shadow: inset 0 0 40px rgba(0,0,0,.35);
+    font: 12.5px/1.6 Consolas, "SF Mono", Menlo, "Cascadia Mono", monospace;
+  }
+  #log { padding: 10px 4px 10px 10px; color: var(--text); }
+  .log-line {
+    padding: 0 8px 0 4px; border-left: 2px solid transparent;
+    white-space: pre-wrap; word-break: break-all; color: var(--text);
+  }
+  .log-line:hover { background: rgba(255,255,255,.025); }
+  .log-line.level-debug { color: #8fa3c8; }
+  .log-line.level-info { color: #d9f7e8; }
+  .log-line.level-warning { color: var(--yellow); background: rgba(255,209,102,.035); border-left-color: var(--yellow); }
+  .log-line.level-error, .log-line.level-critical { color: var(--red); background: rgba(255,93,126,.05); border-left-color: var(--red); }
+  .log-line.level-other { color: #c9d1e8; }
+  mark { background: rgba(255,209,102,.32); color: #fff3c9; border-radius: 2px; padding: 0 1px; }
+
+  #calls { padding: 4px; }
+  table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
+  th, td { padding: 7px 9px; border-bottom: 1px solid var(--border-soft); vertical-align: top; text-align: left; }
+  th {
+    position: sticky; top: 0; z-index: 1; background: #151a2d; color: var(--dim);
+    font-weight: 600; font-size: 11.5px; text-transform: uppercase; letter-spacing: .3px;
+  }
+  tr:hover td { background: rgba(255,255,255,.022); }
+  .badge {
+    display: inline-block; min-width: 42px; text-align: center; padding: 1px 7px;
+    border-radius: 999px; font-size: 11px; font-weight: 600;
+  }
+  .badge.ok { color: #07130c; background: var(--accent); }
+  .badge.error { color: #2b0912; background: var(--red); }
+  .tool { color: var(--cyan); font-weight: 600; }
+  .mono { font-family: Consolas, "SF Mono", Menlo, monospace; }
+  .err-text { color: var(--red); font-size: 11.5px; margin-top: 3px; word-break: break-all; }
+  .empty { padding: 24px; color: var(--faint); text-align: center; }
+</style>
+</head>
+<body>
+<div class="topbar">
+  <div class="logo">🧭</div>
+  <div>
+    <h1>Deep Research · Log Viewer<small>只读 · read-only</small></h1>
+  </div>
+  <span class="live" id="liveState"><span class="dot" id="liveDot"></span><span id="liveText">live</span></span>
+  <div class="spacer"></div>
+  <a class="backlink" href="/" target="_blank">← 研究面板</a>
+</div>
+
+<div class="tabs">
+  <div class="tab active" data-tab="text">📄 文本日志</div>
+  <div class="tab" data-tab="calls">🔍 搜索调用 search_calls</div>
+  <div class="tab" data-tab="events">🧬 事件/回滚</div>
+</div>
+
+<div class="error-box" id="authBox">API 返回 403：请在下方输入 LOG_VIEWER_TOKEN。</div>
+<div class="toolbar" id="authRow" style="display:none">
+  <label>Token</label>
+  <input id="token" type="password" placeholder="LOG_VIEWER_TOKEN">
+  <button id="saveToken">保存</button>
+</div>
+
+<div id="panel-text" class="panel active">
+  <div class="toolbar">
+    <label>文件</label>
+    <select id="fileSelect"></select>
+    <button class="ghost" id="reloadFiles" title="刷新文件列表">↻</button>
+    <label>行数</label>
+    <select id="limit">
+      <option value="300" selected>300</option>
+      <option value="1000">1000</option>
+      <option value="3000">3000</option>
+      <option value="5000">5000</option>
+    </select>
+    <label class="live"><input type="checkbox" id="autoTail" checked> 自动尾随</label>
+    <button id="jumpBottom" title="跳到底部">⏬ 底部</button>
+    <button id="jumpTop" title="跳到顶部">⏫ 顶部</button>
+    <button id="copyLog" title="复制当前显示内容">⧉ 复制</button>
+    <span class="meta" id="textMeta"></span>
+  </div>
+  <div class="toolbar">
+    <input id="searchQ" placeholder="搜索关键字，如 trace=xxx / run_id / ERROR" style="flex:1;min-width:220px">
+    <select id="level">
+      <option value="">全部级别</option>
+      <option value="ERROR">ERROR</option>
+      <option value="WARNING">WARNING</option>
+      <option value="INFO">INFO</option>
+      <option value="DEBUG">DEBUG</option>
+    </select>
+    <button id="doSearch">搜索全文</button>
+    <button class="ghost" id="clearSearch">✕ 回到尾随</button>
+    <span class="meta">级别配色：</span>
+    <span class="chip error" data-level="ERROR">ERROR</span>
+    <span class="chip warning" data-level="WARNING">WARN</span>
+    <span class="chip info" data-level="INFO">INFO</span>
+    <span class="chip debug" data-level="DEBUG">DEBUG</span>
+    <span class="chip all active" data-level="">全部</span>
+  </div>
+  <div class="scroll" id="logWrap"><div id="log"><div class="empty">加载中…</div></div></div>
+</div>
+
+<div id="panel-calls" class="panel">
+  <div class="toolbar">
+    <label>Run ID</label>
+    <input id="callsRun" placeholder="如 20260820-072235">
+    <label>工具</label>
+    <select id="callsTool">
+      <option value="">全部</option>
+      <option>bing_search</option>
+      <option>baidu_search</option>
+      <option>firecrawl_search</option>
+      <option>tavily_search</option>
+      <option>web_fetch</option>
+      <option>sqlite_read</option>
+    </select>
+    <label>状态</label>
+    <select id="callsStatus">
+      <option value="">全部</option>
+      <option value="ok">ok</option>
+      <option value="error">error</option>
+    </select>
+    <input id="callsQ" placeholder="query / error 关键字">
+    <label class="live"><input type="checkbox" id="callsAuto" checked> 自动刷新</label>
+    <button id="callsReload">刷新</button>
+    <span class="meta" id="callsMeta"></span>
+  </div>
+  <div class="scroll" id="calls"><div class="empty">加载中…</div></div>
+<div id="panel-events" class="panel">
+  <div class="toolbar">
+    <label>Run ID</label>
+    <input id="eventsRun" placeholder="如 20260901-080010">
+    <button id="eventsReload">加载事件</button>
+    <label>Event ID</label>
+    <input id="rollbackEvent" placeholder="event_id" style="min-width:220px">
+    <button id="rollbackPlan">查看计划</button>
+    <button id="rollbackExecute">执行回滚</button>
+    <button id="rollbackReplay">回滚+重放</button>
+    <button id="rollbackRegenerate">回滚+重放+重新生成</button>
+    <span class="meta" id="eventsMeta"></span>
+  </div>
+  <div class="toolbar">
+    <label>声明回溯</label>
+    <input id="traceClaim" placeholder="输入最终声明文本" style="flex:1;min-width:220px">
+    <button id="traceBtn">回溯</button>
+    <span class="meta" id="traceMeta"></span>
+  </div>
+  <div class="scroll" id="events"><div class="empty">输入 Run ID 后加载事件</div></div>
+  <pre id="rollbackResult" style="display:none; white-space:pre-wrap; background:#04060c; color:#d9f7e8; border:1px solid var(--border); border-radius:8px; padding:10px; margin-top:8px; max-height:300px; overflow:auto;"></pre>
+</div>
+
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+let token = localStorage.getItem('logToken') || '';
+const urlToken = new URLSearchParams(location.search).get('token');
+if (urlToken) {
+  token = urlToken;
+  localStorage.setItem('logToken', token);
+  history.replaceState(null, '', location.pathname);
+}
+let textMode = 'tail';
+let callsTimer = null, textTimer = null, watchdogTimer = null;
+let textBusy = false, callsBusy = false;
+let textSeq = 0, callsSeq = 0;
+let lastLogContent = '';
+let lastTextSuccess = Date.now();
+let lastLogCounts = { debug: 0, info: 0, warning: 0, error: 0, critical: 0, other: 0 };
+
+function authParam() { return token ? `&token=${encodeURIComponent(token)}` : ''; }
+
+async function api(path) {
+  const ctrl = new AbortController();
+  const timer = setTimeout(() => ctrl.abort(), 10000);
+  let res;
+  try {
+    res = await fetch(path + (path.includes('?') ? '&' : '?') + '_=' + Date.now() + authParam(), { signal: ctrl.signal });
+  } catch (e) {
+    clearTimeout(timer);
+    throw e;
+  }
+  clearTimeout(timer);
+  if (res.status === 403) {
+    $('authBox').style.display = 'block';
+    $('authRow').style.display = 'flex';
+    throw new Error('token required');
+  }
+  if (!res.ok) throw new Error(res.status + ' ' + (await res.text()));
+  return res.json();
+}
+
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function levelOf(line) {
+  const m = line.match(/\[(DEBUG|INFO|WARNING|ERROR|CRITICAL)\s*\]/);
+  return m ? m[1].toLowerCase() : 'other';
+}
+
+function appendHighlighted(parent, text, q) {
+  if (!q) { parent.appendChild(document.createTextNode(text)); return; }
+  const lower = text.toLowerCase(), ql = q.toLowerCase();
+  let i = 0;
+  for (;;) {
+    const idx = lower.indexOf(ql, i);
+    if (idx < 0) { parent.appendChild(document.createTextNode(text.slice(i))); break; }
+    if (idx > i) parent.appendChild(document.createTextNode(text.slice(i, idx)));
+    const mark = document.createElement('mark');
+    mark.textContent = text.slice(idx, idx + ql.length);
+    parent.appendChild(mark);
+    i = idx + ql.length;
+  }
+}
+
+function renderLog(content, q) {
+  const box = $('log');
+  const frag = document.createDocumentFragment();
+  const lines = content.split('\n');
+  let counts = { debug: 0, info: 0, warning: 0, error: 0, critical: 0, other: 0 };
+  for (const line of lines) {
+    const div = document.createElement('div');
+    const lv = levelOf(line);
+    counts[lv] = (counts[lv] || 0) + 1;
+    div.className = 'log-line level-' + lv;
+    appendHighlighted(div, line, q);
+    frag.appendChild(div);
+  }
+  box.innerHTML = '';
+  box.appendChild(frag);
+  return counts;
+}
+
+function appendLogLines(delta, q) {
+  const box = $('log');
+  const frag = document.createDocumentFragment();
+  const lines = delta.split(String.fromCharCode(10));
+  for (const line of lines) {
+    if (line === '') continue;
+    const div = document.createElement('div');
+    const lv = levelOf(line);
+    lastLogCounts[lv] = (lastLogCounts[lv] || 0) + 1;
+    div.className = 'log-line level-' + lv;
+    appendHighlighted(div, line, q);
+    frag.appendChild(div);
+  }
+  box.appendChild(frag);
+}
+
+async function loadFiles() {
+  const files = await api('/api/logs/files');
+  const sel = $('fileSelect');
+  const prev = sel.value;
+  sel.innerHTML = '';
+  for (const f of files) {
+    const opt = document.createElement('option');
+    opt.value = f.name;
+    opt.textContent = `${f.name} · ${(f.size/1024/1024).toFixed(1)} MB · ${f.mtime.replace('T', ' ').slice(0, 16)}`;
+    sel.appendChild(opt);
+  }
+  if (prev) sel.value = prev;
+  if (!sel.value && files[0]) sel.value = files[0].name;
+}
+
+async function loadText() {
+  if (textBusy) return;
+  textBusy = true;
+  const seq = ++textSeq;
+  try {
+    const file = $('fileSelect').value || 'current.log';
+    const limit = $('limit').value;
+    const q = textMode === 'search' ? $('searchQ').value : '';
+    let url;
+    if (textMode === 'search') {
+      url = `/api/logs/text?file=${encodeURIComponent(file)}&mode=search&lines=${limit}&q=${encodeURIComponent(q)}&level=${encodeURIComponent($('level').value)}`;
+    } else {
+      url = `/api/logs/text?file=${encodeURIComponent(file)}&mode=tail&lines=${limit}`;
+    }
+    const data = await api(url);
+    if (seq !== textSeq) return; // discard stale response
+    lastTextSuccess = Date.now();
+    const content = data.content || '(无内容)';
+    if (content === lastLogContent) return; // nothing new, skip expensive render
+    let counts;
+    if (textMode === 'tail' && lastLogContent && content.startsWith(lastLogContent)) {
+      // Append only the new lines instead of rebuilding the whole log.
+      const delta = content.slice(lastLogContent.length);
+      appendLogLines(delta, q);
+      counts = { ...lastLogCounts };
+    } else {
+      counts = renderLog(content, q);
+      lastLogCounts = { ...counts };
+    }
+    lastLogContent = content;
+    const wrap = $('logWrap');
+    const nearBottom = wrap.scrollHeight - wrap.scrollTop - wrap.clientHeight < 90;
+    if (textMode === 'tail' && ($('autoTail').checked || nearBottom)) wrap.scrollTop = wrap.scrollHeight;
+    $('textMeta').textContent =
+      `${file} · ${(data.size/1024/1024).toFixed(1)} MB · ` +
+      `E${counts.error + counts.critical} W${counts.warning} I${counts.info} D${counts.debug} · ` +
+      `更新 ${new Date().toLocaleTimeString()}`;
+  } finally {
+    textBusy = false;
+  }
+}
+
+async function loadCalls() {
+  if (callsBusy) return;
+  callsBusy = true;
+  const seq = ++callsSeq;
+  try {
+    const url = `/api/logs/calls?run_id=${encodeURIComponent($('callsRun').value.trim())}&tool=${encodeURIComponent($('callsTool').value)}&status=${encodeURIComponent($('callsStatus').value)}&q=${encodeURIComponent($('callsQ').value.trim())}&lines=500`;
+    const data = await api(url);
+    if (seq !== callsSeq) return; // discard stale response
+    const box = $('calls');
+    if (!data.records.length) {
+      box.innerHTML = '<div class="empty">没有匹配记录</div>';
+    } else {
+      let html = '<table><thead><tr><th>时间</th><th>Agent</th><th>工具</th><th>状态</th><th>耗时 ms</th><th>查询 / 错误</th></tr></thead><tbody>';
+      for (const r of data.records) {
+        const t = (r.ts || '').replace('T', ' ').slice(0, 19);
+        const st = r.status === 'ok'
+          ? '<span class="badge ok">ok</span>'
+          : '<span class="badge error">error</span>';
+        const query = escapeHtml((r.query || '').slice(0, 200));
+        const error = r.error ? `<div class="err-text">${escapeHtml(String(r.error).slice(0, 300))}</div>` : '';
+        html += `<tr><td class="meta mono">${escapeHtml(t)}</td><td>${escapeHtml(r.agent || '')}</td><td class="tool mono">${escapeHtml(r.tool || '')}</td><td>${st}</td><td class="mono">${r.duration_ms ?? ''}</td><td class="mono">${query}${error}</td></tr>`;
+      }
+      box.innerHTML = html + '</tbody></table>';
+    }
+    $('callsMeta').textContent = `${data.records.length} 条 · ${(data.size/1024/1024).toFixed(2)} MB · 更新 ${new Date().toLocaleTimeString()}`;
+  } finally {
+    callsBusy = false;
+  }
+}
+
+async function loadEvents() {
+  const runId = $('eventsRun').value.trim();
+  if (!runId) {
+    $('events').innerHTML = '<div class="empty">请输入 Run ID</div>';
+    return;
+  }
+  const data = await api('/research/' + encodeURIComponent(runId) + '/events?limit=200');
+  const box = $('events');
+  if (!data.events.length) {
+    box.innerHTML = '<div class="empty">没有事件记录（可能该 run 早于事件溯源启用）</div>';
+  } else {
+    let html = '<table><thead><tr><th>seq</th><th>action</th><th>agent</th><th>parent</th><th>payload</th></tr></thead><tbody>';
+    for (const e of data.events) {
+      html += '<tr><td>' + e.seq + '</td><td class="tool mono">' + escapeHtml(e.action) + '</td><td>' + escapeHtml(e.agent || '') + '</td><td class="mono">' + escapeHtml((e.parent_event_id || '').slice(0, 8)) + '</td><td class="mono">' + escapeHtml(e.payload_preview || '') + '</td></tr>';
+    }
+    box.innerHTML = html + '</tbody></table>';
+  }
+  $('eventsMeta').textContent = '共 ' + data.count + ' 条事件';
+}
+
+async function rollbackAction(mode) {
+  const runId = $('eventsRun').value.trim();
+  const eventId = $('rollbackEvent').value.trim();
+  if (!runId || !eventId) {
+    alert('需要 Run ID 和 Event ID');
+    return;
+  }
+  const body = { event_id: eventId, execute: true, replay: false, regenerate: false };
+  if (mode === 'plan') body.execute = false;
+  if (mode === 'replay') body.replay = true;
+  if (mode === 'regenerate') body.regenerate = true;
+  const res = await fetch('/research/' + encodeURIComponent(runId) + '/rollback', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(body),
+  });
+  const data = await res.json();
+  $('rollbackResult').style.display = 'block';
+  $('rollbackResult').textContent = JSON.stringify(data, null, 2);
+}
+
+async function traceClaimAction() {
+  const runId = $('eventsRun').value.trim();
+  const claim = $('traceClaim').value.trim();
+  if (!runId || !claim) {
+    alert('需要 Run ID 和声明文本');
+    return;
+  }
+  const data = await api('/research/' + encodeURIComponent(runId) + '/trace?claim=' + encodeURIComponent(claim));
+  $('rollbackResult').style.display = 'block';
+  $('rollbackResult').textContent = JSON.stringify(data, null, 2);
+}
+
+function updateLiveUi() {
+  const auto = $('autoTail').checked;
+  $('liveDot').className = 'dot' + (auto ? '' : ' paused');
+  $('liveText').textContent = auto ? '自动刷新中' : '已暂停';
+}
+
+function startTimers() {
+  clearInterval(textTimer); clearInterval(callsTimer); clearInterval(watchdogTimer);
+  textTimer = setInterval(() => { if ($('autoTail').checked) loadText().catch(console.warn); }, 2000);
+  callsTimer = setInterval(() => { if ($('callsAuto').checked) loadCalls().catch(console.warn); }, 3000);
+  watchdogTimer = setInterval(() => {
+    if ($('autoTail').checked && Date.now() - lastTextSuccess > 15000) {
+      console.warn('log auto-refresh watchdog: forcing reload');
+      textBusy = false;
+      loadText().catch(console.warn);
+    }
+  }, 5000);
+}
+
+document.querySelectorAll('.tab').forEach(t => {
+  t.onclick = () => {
+    document.querySelectorAll('.tab').forEach(x => x.classList.remove('active'));
+    document.querySelectorAll('.panel').forEach(x => x.classList.remove('active'));
+    t.classList.add('active');
+    $('panel-' + t.dataset.tab).classList.add('active');
+  };
+});
+
+$('reloadFiles').onclick = () => loadFiles().then(loadText).catch(alert);
+$('fileSelect').onchange = () => { lastLogContent = ''; loadText().catch(alert); };
+$('limit').onchange = () => { lastLogContent = ''; loadText().catch(alert); };
+$('jumpBottom').onclick = () => { $('logWrap').scrollTop = $('logWrap').scrollHeight; };
+$('jumpTop').onclick = () => { $('logWrap').scrollTop = 0; };
+$('copyLog').onclick = async () => {
+  const text = Array.from($('log').querySelectorAll('.log-line')).map(x => x.textContent).join('\n');
+  try {
+    await navigator.clipboard.writeText(text);
+  } catch (e) {
+    const ta = document.createElement('textarea');
+    ta.value = text; document.body.appendChild(ta); ta.select();
+    document.execCommand('copy'); ta.remove();
+  }
+  $('copyLog').textContent = '✓ 已复制';
+  setTimeout(() => { $('copyLog').textContent = '⧉ 复制'; }, 1200);
+};
+$('searchQ').addEventListener('keydown', e => { if (e.key === 'Enter') $('doSearch').click(); });
+$('doSearch').onclick = () => { lastLogContent = ''; textMode = 'search'; loadText().catch(alert); };
+$('clearSearch').onclick = () => {
+  $('searchQ').value = ''; $('level').value = '';
+  document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+  document.querySelector('.chip.all').classList.add('active');
+  textMode = 'tail'; lastLogContent = ''; $('autoTail').checked = true; updateLiveUi(); loadText().catch(alert);
+};
+$('autoTail').onchange = () => { updateLiveUi(); if ($('autoTail').checked) { textMode = 'tail'; loadText().catch(alert); } };
+document.querySelectorAll('.chip[data-level]').forEach(chip => {
+  chip.onclick = () => {
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    chip.classList.add('active');
+    $('level').value = chip.dataset.level;
+    textMode = 'search';
+    lastLogContent = '';
+    loadText().catch(alert);
+  };
+});
+$('callsReload').onclick = () => loadCalls().catch(alert);
+$('eventsReload').onclick = () => loadEvents().catch(alert);
+$('rollbackPlan').onclick = () => rollbackAction('plan').catch(alert);
+$('rollbackExecute').onclick = () => rollbackAction('execute').catch(alert);
+$('rollbackReplay').onclick = () => rollbackAction('replay').catch(alert);
+$('rollbackRegenerate').onclick = () => rollbackAction('regenerate').catch(alert);
+$('traceBtn').onclick = () => traceClaimAction().catch(alert);
+$('callsAuto').onchange = () => { if ($('callsAuto').checked) loadCalls().catch(alert); };
+$('saveToken').onclick = () => {
+  token = $('token').value.trim();
+  localStorage.setItem('logToken', token);
+  $('authBox').style.display = 'none';
+  $('authRow').style.display = 'none';
+  Promise.all([loadFiles(), loadText(), loadCalls()]).catch(alert);
+};
+
+document.addEventListener('visibilitychange', () => {
+  if (!document.hidden) {
+    textBusy = false;
+    callsBusy = false;
+    startTimers();
+    loadFiles().catch(() => {});
+    loadText().catch(() => {});
+    loadCalls().catch(() => {});
+  }
+});
+
+(async function init() {
+  try {
+    await Promise.all([loadFiles(), loadText(), loadCalls()]);
+  } catch (e) { /* token prompt shown by api() when server returns 403 */ }
+  updateLiveUi();
+  startTimers();
+})();
+</script>
+</body>
+</html>
